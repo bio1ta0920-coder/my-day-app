@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Plus, Sparkles, RefreshCw, BookOpen, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
+import { Plus, Sparkles, RefreshCw, BookOpen, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Calendar, BarChart2 } from 'lucide-react'
 import type { BudgetDayRecord, Expense } from '@/lib/types'
 import {
   getBudgetRecord,
@@ -17,6 +17,7 @@ import {
 import { BUDGET_EMOTIONS } from '@/lib/constants'
 import ExpenseModal from '@/components/budget/ExpenseModal'
 import ExpenseCard from '@/components/budget/ExpenseCard'
+import MonthlyReport from '@/components/budget/MonthlyReport'
 
 const SATISFACTION_OPTIONS = [
   { emoji: '😊', label: '매우만족', value: '매우만족' },
@@ -52,6 +53,7 @@ function formatFeedback(text: string): string {
 export default function BudgetPage() {
   const [today, setToday] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
+  const [view, setView] = useState<'daily' | 'report'>('daily')
   const dateInputRef = useRef<HTMLInputElement>(null)
   const [record, setRecord] = useState<BudgetDayRecord | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -184,20 +186,40 @@ export default function BudgetPage() {
       {/* 헤더 */}
       <div className="bg-gradient-to-br from-red-700 via-red-600 to-rose-700 text-white px-5 pt-12 pb-6">
         <div className="flex items-center justify-between mb-3">
-          <button onClick={() => loadDate(addDays(selectedDate, -1))} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all">
-            <ChevronLeft size={18} />
-          </button>
-          <button
-            onClick={() => { setTimeout(() => dateInputRef.current?.showPicker?.(), 50) }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all"
-          >
-            <Calendar size={14} />
-            <span className="text-sm font-semibold">{formatDate(selectedDate)}</span>
-            {isToday && <span className="text-xs bg-white/25 px-1.5 py-0.5 rounded-full">오늘</span>}
-          </button>
-          <button onClick={() => loadDate(addDays(selectedDate, 1))} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all">
-            <ChevronRight size={18} />
-          </button>
+          {view === 'daily' ? (
+            <>
+              <button onClick={() => loadDate(addDays(selectedDate, -1))} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all">
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                onClick={() => { setTimeout(() => dateInputRef.current?.showPicker?.(), 50) }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all"
+              >
+                <Calendar size={14} />
+                <span className="text-sm font-semibold">{formatDate(selectedDate)}</span>
+                {isToday && <span className="text-xs bg-white/25 px-1.5 py-0.5 rounded-full">오늘</span>}
+              </button>
+              <button onClick={() => loadDate(addDays(selectedDate, 1))} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all">
+                <ChevronRight size={18} />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => { const [yy, mm] = selectedDate.split('-'); const d = new Date(parseInt(yy), parseInt(mm) - 2, 1); loadDate(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`) }}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <span className="text-sm font-semibold">{selectedDate.slice(0, 7).replace('-', '년 ')}월 리포트</span>
+              <button
+                onClick={() => { const [yy, mm] = selectedDate.split('-'); const d = new Date(parseInt(yy), parseInt(mm), 1); loadDate(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`) }}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </>
+          )}
         </div>
         <input ref={dateInputRef} type="date" value={selectedDate} onChange={e => { if (e.target.value) loadDate(e.target.value) }} className="sr-only" />
 
@@ -224,6 +246,22 @@ export default function BudgetPage() {
           </div>
         </div>
 
+        {/* 뷰 탭 */}
+        <div className="flex gap-2 mt-4 mb-1">
+          <button
+            onClick={() => setView('daily')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${view === 'daily' ? 'bg-white text-red-600' : 'bg-white/20 text-white'}`}
+          >
+            <Calendar size={12} /> 일별 기록
+          </button>
+          <button
+            onClick={() => setView('report')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${view === 'report' ? 'bg-white text-red-600' : 'bg-white/20 text-white'}`}
+          >
+            <BarChart2 size={12} /> 월간 리포트
+          </button>
+        </div>
+
         <div className="mt-4 pt-4 border-t border-white/20 flex gap-4 flex-wrap">
           <div>
             <p className="text-red-200 text-xs">이번달 지출</p>
@@ -246,7 +284,11 @@ export default function BudgetPage() {
         </div>
       </div>
 
-      <div className="px-4 mt-5 space-y-4">
+      {view === 'report' && (
+        <MonthlyReport yearMonth={selectedDate.slice(0, 7)} />
+      )}
+
+      {view === 'daily' && <div className="px-4 mt-5 space-y-4">
         {/* 지출 내역 */}
         <div>
           <div className="flex items-center justify-between mb-3">
@@ -456,7 +498,7 @@ export default function BudgetPage() {
             </div>
           </div>
         )}
-      </div>
+      </div>}
 
       {showAddModal && (
         <ExpenseModal
