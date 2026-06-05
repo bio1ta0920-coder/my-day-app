@@ -183,3 +183,14 @@ export interface StudySettings {
   pomodoroMinutes: number
   breakMinutes: number
 }
+
+export interface BookRecord {
+  id: string
+  title: string
+  author: string
+  status: 'completed' | 'wishlist'
+  rating?: 'good' | 'bad'
+  review?: string
+  completedDate?: string  // YYYY-MM-DD
+  addedDate: string       // YYYY-MM-DD
+}

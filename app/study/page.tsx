@@ -1,13 +1,15 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { ChevronLeft, ChevronRight, Plus, Trash2, Check, Play, Square, BookOpen, Trophy, Target, Clock } from 'lucide-react'
-import type { StudyDayRecord, StudySession, StudyTask, StudyExam, StudySubject, StudySettings } from '@/lib/types'
+import { ChevronLeft, ChevronRight, Plus, Trash2, Check, Play, Square, BookOpen, Trophy, Target, Clock, Heart, ThumbsDown, ThumbsUp } from 'lucide-react'
+import type { StudyDayRecord, StudySession, StudyTask, StudyExam, StudySubject, StudySettings, BookRecord } from '@/lib/types'
 import {
   getStudyRecord,
   saveStudyRecord,
   getStudySettings,
   saveStudySettings,
+  getBookRecords,
+  saveBookRecords,
   syncStudyToPlanner,
   getTodayString,
   formatDate,
@@ -232,6 +234,89 @@ function SubjectSettingsModal({ settings, onSave, onClose }: {
   )
 }
 
+function BookModal({ book, onSave, onClose }: {
+  book?: BookRecord | null
+  onSave: (b: BookRecord) => void
+  onClose: () => void
+}) {
+  const [title, setTitle] = useState(book?.title ?? '')
+  const [author, setAuthor] = useState(book?.author ?? '')
+  const [status, setStatus] = useState<'completed' | 'wishlist'>(book?.status ?? 'completed')
+  const [rating, setRating] = useState<'good' | 'bad' | undefined>(book?.rating)
+  const [review, setReview] = useState(book?.review ?? '')
+  const [completedDate, setCompletedDate] = useState(book?.completedDate ?? getTodayString())
+
+  function save() {
+    if (!title.trim()) return
+    onSave({
+      id: book?.id ?? Date.now().toString(),
+      title: title.trim(),
+      author: author.trim(),
+      status,
+      rating: rating,
+      review: review.trim() || undefined,
+      completedDate: status === 'completed' ? completedDate : undefined,
+      addedDate: book?.addedDate ?? getTodayString(),
+    })
+    onClose()
+  }
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-white">
+      <div className="flex items-center justify-between px-4 py-4 border-b border-slate-100">
+        <h2 className="text-lg font-bold text-slate-800">{book ? '책 수정' : '책 추가'}</h2>
+        <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500">✕</button>
+      </div>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <div className="grid grid-cols-2 gap-2">
+          {(['completed', 'wishlist'] as const).map(s => (
+            <button key={s} onClick={() => setStatus(s)}
+              className={`py-2.5 rounded-xl border text-sm font-semibold transition-all ${status === s ? 'border-violet-400 bg-violet-50 text-violet-600' : 'border-slate-200 bg-white text-slate-500'}`}>
+              {s === 'completed' ? '✅ 완독' : '🔖 위시리스트'}
+            </button>
+          ))}
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-1.5">책 제목 <span className="text-red-500">*</span></label>
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="책 제목을 입력하세요" className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100" />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-1.5">저자 <span className="text-slate-400 font-normal">(선택)</span></label>
+          <input type="text" value={author} onChange={e => setAuthor(e.target.value)} placeholder="저자명" className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100" />
+        </div>
+        {status === 'completed' && (
+          <>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">완독 날짜</label>
+              <input type="date" value={completedDate} onChange={e => setCompletedDate(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">이 책 어땠나요? <span className="text-slate-400 font-normal">(선택)</span></label>
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => setRating(rating === 'good' ? undefined : 'good')}
+                  className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-semibold transition-all ${rating === 'good' ? 'border-emerald-400 bg-emerald-50 text-emerald-600' : 'border-slate-200 bg-white text-slate-500'}`}>
+                  <ThumbsUp size={15} /> 좋아요
+                </button>
+                <button onClick={() => setRating(rating === 'bad' ? undefined : 'bad')}
+                  className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-semibold transition-all ${rating === 'bad' ? 'border-red-300 bg-red-50 text-red-500' : 'border-slate-200 bg-white text-slate-500'}`}>
+                  <ThumbsDown size={15} /> 별로에요
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">한줄평 <span className="text-slate-400 font-normal">(선택)</span></label>
+              <textarea value={review} onChange={e => setReview(e.target.value)} placeholder="이 책에 대한 한줄평을 남겨보세요" rows={2}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100 resize-none" />
+            </div>
+          </>
+        )}
+      </div>
+      <div className="px-4 py-4 border-t border-slate-100">
+        <button onClick={save} disabled={!title.trim()} className="w-full py-3.5 rounded-xl bg-violet-500 text-white font-bold disabled:opacity-40">저장하기</button>
+      </div>
+    </div>
+  )
+}
+
 // ── 메인 페이지 ──
 export default function StudyPage() {
   const [currentDate, setCurrentDate] = useState('')
@@ -247,6 +332,15 @@ export default function StudyPage() {
   const [selectedSubjectId, setSelectedSubjectId] = useState('')
   const [sessionStartTime, setSessionStartTime] = useState('')
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // 탭
+  const [activeTab, setActiveTab] = useState<'study' | 'books'>('study')
+
+  // 독서
+  const [books, setBooks] = useState<BookRecord[]>([])
+  const [bookTab, setBookTab] = useState<'completed' | 'wishlist'>('completed')
+  const [showBookModal, setShowBookModal] = useState(false)
+  const [editingBook, setEditingBook] = useState<BookRecord | null>(null)
 
   // 모달
   const [showExamModal, setShowExamModal] = useState(false)
@@ -267,6 +361,7 @@ export default function StudyPage() {
     const today = getTodayString()
     setCurrentDate(today)
     loadData(today)
+    setBooks(getBookRecords())
   }, []) // eslint-disable-line
 
   // 타이머 tick
@@ -345,6 +440,21 @@ export default function StudyPage() {
   function deleteSession(id: string) {
     const sessions = record.sessions.filter(s => s.id !== id)
     updateRecord({ ...record, sessions })
+  }
+
+  // 독서
+  function saveBook(book: BookRecord) {
+    const updated = editingBook
+      ? books.map(b => b.id === book.id ? book : b)
+      : [...books, book]
+    setBooks(updated)
+    saveBookRecords(updated)
+    setEditingBook(null)
+  }
+  function deleteBook(id: string) {
+    const updated = books.filter(b => b.id !== id)
+    setBooks(updated)
+    saveBookRecords(updated)
   }
 
   // 시험 D-day
@@ -430,6 +540,77 @@ export default function StudyPage() {
         </div>
       </div>
 
+      {/* 공부/독서 탭 */}
+      <div className="px-4 pt-4 flex gap-2">
+        <button onClick={() => setActiveTab('study')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'study' ? 'bg-violet-500 text-white' : 'bg-white text-slate-500 border border-slate-200'}`}>
+          📚 공부
+        </button>
+        <button onClick={() => setActiveTab('books')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'books' ? 'bg-violet-500 text-white' : 'bg-white text-slate-500 border border-slate-200'}`}>
+          📖 독서 기록
+        </button>
+      </div>
+
+      {activeTab === 'books' ? (
+        <div className="px-4 pt-4 space-y-4 pb-6">
+          {/* 완독/위시 탭 */}
+          <div className="flex gap-2">
+            {(['completed', 'wishlist'] as const).map(t => {
+              const count = books.filter(b => b.status === t).length
+              return (
+                <button key={t} onClick={() => setBookTab(t)}
+                  className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-all ${bookTab === t ? 'border-violet-400 bg-violet-50 text-violet-600' : 'border-slate-200 bg-white text-slate-500'}`}>
+                  {t === 'completed' ? `✅ 완독 ${count}권` : `🔖 위시리스트 ${count}권`}
+                </button>
+              )
+            })}
+          </div>
+
+          <button onClick={() => { setEditingBook(null); setShowBookModal(true) }}
+            className="w-full py-3 rounded-xl border-2 border-dashed border-violet-200 text-violet-400 text-sm font-semibold hover:bg-violet-50 transition-colors flex items-center justify-center gap-2">
+            <Plus size={15} /> {bookTab === 'completed' ? '완독 책 추가' : '위시리스트 추가'}
+          </button>
+
+          {books.filter(b => b.status === bookTab).length === 0 ? (
+            <div className="bg-white rounded-2xl py-10 text-center text-slate-400 text-sm shadow-sm">
+              {bookTab === 'completed' ? '완독한 책을 기록해보세요 📚' : '읽고 싶은 책을 담아보세요 🔖'}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {books
+                .filter(b => b.status === bookTab)
+                .sort((a, b) => (b.completedDate ?? b.addedDate).localeCompare(a.completedDate ?? a.addedDate))
+                .map(book => (
+                  <div key={book.id} onClick={() => { setEditingBook(book); setShowBookModal(true) }}
+                    className="bg-white rounded-2xl shadow-sm px-4 py-3.5 cursor-pointer active:scale-[0.99] transition-transform">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-bold text-slate-800 text-sm">{book.title}</p>
+                          {book.rating === 'good' && <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-semibold flex items-center gap-1"><ThumbsUp size={10} /> 좋아요</span>}
+                          {book.rating === 'bad' && <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-500 font-semibold flex items-center gap-1"><ThumbsDown size={10} /> 별로에요</span>}
+                        </div>
+                        {book.author && <p className="text-xs text-slate-400 mt-0.5">{book.author}</p>}
+                        {book.completedDate && <p className="text-xs text-violet-400 mt-0.5">완독 {book.completedDate}</p>}
+                        {book.review && <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">"{book.review}"</p>}
+                      </div>
+                      <button onClick={e => { e.stopPropagation(); deleteBook(book.id) }}
+                        className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-300 hover:bg-red-50 hover:text-red-400 transition-colors flex-shrink-0">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+
+          {bookTab === 'completed' && books.filter(b => b.status === 'completed').length > 0 && (
+            <div className="bg-violet-50 rounded-2xl px-4 py-3 text-center">
+              <p className="text-violet-600 font-bold text-lg">{books.filter(b => b.status === 'completed').length}권</p>
+              <p className="text-violet-400 text-xs mt-0.5">올해 완독한 책</p>
+            </div>
+          )}
+        </div>
+      ) : (
       <div className="px-4 pt-4 space-y-4 pb-6">
 
         {/* D-day */}
@@ -656,7 +837,16 @@ export default function StudyPage() {
 
       </div>
 
+      )} {/* activeTab === 'books' ? ... : ... 끝 */}
+
       {/* 모달들 */}
+      {showBookModal && (
+        <BookModal
+          book={editingBook}
+          onSave={saveBook}
+          onClose={() => { setShowBookModal(false); setEditingBook(null) }}
+        />
+      )}
       {showExamModal && (
         <ExamModal
           exam={editingExam}

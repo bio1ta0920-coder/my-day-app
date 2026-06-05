@@ -11,6 +11,7 @@ import type {
   StudyDayRecord,
   StudySettings,
   StudySession,
+  BookRecord,
 } from './types'
 import { DEFAULT_BUDGETS, PLANNER_CATEGORIES, DEFAULT_STUDY_SUBJECTS } from './constants'
 import { pushToCloud } from './sync'
@@ -535,6 +536,30 @@ export function syncStudyToPlanner(date: string, sessions: StudySession[]): void
   } catch {
     // ignore
   }
+}
+
+// ──────────────────────────────────────────
+// 독서 Storage
+// ──────────────────────────────────────────
+
+const BOOK_RECORDS_KEY = 'book_records'
+
+export function getBookRecords(): BookRecord[] {
+  if (!isBrowser) return []
+  try {
+    const raw = localStorage.getItem(BOOK_RECORDS_KEY)
+    if (!raw) return []
+    return JSON.parse(raw) as BookRecord[]
+  } catch { return [] }
+}
+
+export function saveBookRecords(books: BookRecord[]): void {
+  if (!isBrowser) return
+  try {
+    const value = JSON.stringify(books)
+    localStorage.setItem(BOOK_RECORDS_KEY, value)
+    pushToCloud(BOOK_RECORDS_KEY, value)
+  } catch (e) { console.error('독서 기록 저장 실패:', e) }
 }
 
 // ──────────────────────────────────────────
