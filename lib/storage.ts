@@ -32,6 +32,7 @@ const defaultBudgetSettings: BudgetSettings = {
   monthlySavingsGoal: 500000,
   categoryBudgets: { ...DEFAULT_BUDGETS },
   monthlyOverrides: {},
+  loans: [],
 }
 
 export function getBudgetRecord(date: string): BudgetDayRecord | null {
@@ -82,6 +83,7 @@ export function getBudgetSettings(): BudgetSettings {
         ...(saved.categoryBudgets ?? {}),
       },
       monthlyOverrides: saved.monthlyOverrides ?? {},
+      loans: saved.loans ?? [],
     }
   } catch {
     return { ...defaultBudgetSettings }

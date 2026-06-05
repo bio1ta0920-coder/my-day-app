@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Eye, EyeOff, Cloud, CloudOff, RefreshCw } from 'lucide-react'
-import type { BudgetSettings, HealthSettings, FavoriteFood, FavoriteExercise } from '@/lib/types'
+import type { BudgetSettings, HealthSettings, FavoriteFood, FavoriteExercise, LoanItem, LoanType } from '@/lib/types'
 import {
   getApiKey,
   saveApiKey,
@@ -198,6 +198,55 @@ export default function SettingsPage() {
     saveHealthSettings(updated)
   }
 
+  const emptyLoan = (): LoanItem => ({
+    id: Date.now().toString(),
+    name: '',
+    type: '신용대출',
+    totalAmount: 0,
+    remainingBalance: 0,
+    monthlyPayment: 0,
+    interestRate: 0,
+    startDate: '',
+    endDate: '',
+    memo: '',
+  })
+
+  const [showLoanForm, setShowLoanForm] = useState(false)
+  const [loanForm, setLoanForm] = useState<LoanItem>(emptyLoan())
+  const [editingLoanId, setEditingLoanId] = useState<string | null>(null)
+
+  function setLoan<K extends keyof LoanItem>(key: K, value: LoanItem[K]) {
+    setLoanForm(prev => ({ ...prev, [key]: value }))
+  }
+
+  function handleSaveLoan() {
+    if (!budgetSettings || !loanForm.name.trim()) return
+    const loans = editingLoanId
+      ? budgetSettings.loans.map(l => (l.id === editingLoanId ? loanForm : l))
+      : [...budgetSettings.loans, { ...loanForm, id: Date.now().toString() }]
+    const updated = { ...budgetSettings, loans }
+    setBudgetSettings(updated)
+    saveBudgetSettings(updated)
+    setShowLoanForm(false)
+    setEditingLoanId(null)
+    setLoanForm(emptyLoan())
+    showToast('대출 정보가 저장됐어요.')
+  }
+
+  function handleDeleteLoan(id: string) {
+    if (!budgetSettings) return
+    const updated = { ...budgetSettings, loans: budgetSettings.loans.filter(l => l.id !== id) }
+    setBudgetSettings(updated)
+    saveBudgetSettings(updated)
+    showToast('대출 항목이 삭제됐어요.')
+  }
+
+  function handleEditLoan(loan: LoanItem) {
+    setLoanForm({ ...loan })
+    setEditingLoanId(loan.id)
+    setShowLoanForm(true)
+  }
+
   if (!budgetSettings || !healthSettings) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -383,9 +432,165 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <button onClick={handleSaveBudget} className="w-full py-3 bg-pink-400 text-white rounded-xl font-semibold text-sm hover:bg-pink-500 transition-colors">
+            <button onClick={handleSaveBudget} className="w-full py-3 bg-red-600 text-white rounded-xl font-semibold text-sm hover:bg-red-700 transition-colors">
               저장하기
             </button>
+          </div>
+        </section>
+
+        {/* 대출 관리 */}
+        <section className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="px-4 py-3.5 border-b border-slate-50 flex items-center justify-between">
+            <div>
+              <h2 className="font-bold text-slate-800">🏦 대출 관리</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {budgetSettings.loans.length > 0
+                  ? `총 월 상환액 ${budgetSettings.loans.reduce((s, l) => s + l.monthlyPayment, 0).toLocaleString('ko-KR')}원`
+                  : '대출 정보를 등록하면 가계부에 반영됩니다'}
+              </p>
+            </div>
+            <button
+              onClick={() => { setLoanForm(emptyLoan()); setEditingLoanId(null); setShowLoanForm(v => !v) }}
+              className="px-3 py-1.5 bg-red-600 text-white rounded-xl text-xs font-semibold hover:bg-red-700 transition-colors"
+            >
+              + 추가
+            </button>
+          </div>
+          <div className="px-4 py-4 space-y-3">
+            {/* 등록된 대출 목록 */}
+            {budgetSettings.loans.length === 0 && !showLoanForm && (
+              <p className="text-sm text-slate-400 text-center py-4">등록된 대출이 없어요</p>
+            )}
+            {budgetSettings.loans.map(loan => (
+              <div key={loan.id} className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                <div className="flex items-start justify-between mb-1">
+                  <div>
+                    <span className="font-semibold text-slate-800 text-sm">{loan.name}</span>
+                    <span className="ml-2 text-xs bg-red-50 text-red-500 px-1.5 py-0.5 rounded-full">{loan.type}</span>
+                  </div>
+                  <div className="flex gap-1">
+                    <button onClick={() => handleEditLoan(loan)} className="text-xs text-slate-400 hover:text-slate-600 px-2 py-1 rounded-lg hover:bg-slate-200 transition-colors">수정</button>
+                    <button onClick={() => handleDeleteLoan(loan.id)} className="text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50 transition-colors">삭제</button>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
+                  <span>월 상환 <strong className="text-slate-700">{loan.monthlyPayment.toLocaleString('ko-KR')}원</strong></span>
+                  <span>잔여 <strong className="text-slate-700">{loan.remainingBalance.toLocaleString('ko-KR')}원</strong></span>
+                  {loan.interestRate > 0 && <span>금리 <strong className="text-slate-700">{loan.interestRate}%</strong></span>}
+                  {loan.endDate && <span>만기 <strong className="text-slate-700">{loan.endDate}</strong></span>}
+                </div>
+                {loan.memo && <p className="text-xs text-slate-400 mt-1">{loan.memo}</p>}
+              </div>
+            ))}
+
+            {/* 추가/수정 폼 */}
+            {showLoanForm && (
+              <div className="bg-red-50 rounded-xl p-3 border border-red-100 space-y-3 fade-in">
+                <p className="text-sm font-semibold text-red-700">{editingLoanId ? '대출 수정' : '대출 추가'}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-slate-600 block mb-1">대출명 *</label>
+                    <input
+                      type="text"
+                      value={loanForm.name}
+                      onChange={e => setLoan('name', e.target.value)}
+                      placeholder="예: 전세자금대출"
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-600 block mb-1">종류</label>
+                    <select
+                      value={loanForm.type}
+                      onChange={e => setLoan('type', e.target.value as LoanType)}
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                    >
+                      {(['주택담보대출','전세대출','자동차할부','신용대출','학자금대출','기타'] as LoanType[]).map(t => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-slate-600 block mb-1">월 상환액 (원)</label>
+                    <input
+                      type="number"
+                      value={loanForm.monthlyPayment || ''}
+                      onChange={e => setLoan('monthlyPayment', Number(e.target.value) || 0)}
+                      placeholder="0"
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-600 block mb-1">잔여 잔액 (원)</label>
+                    <input
+                      type="number"
+                      value={loanForm.remainingBalance || ''}
+                      onChange={e => setLoan('remainingBalance', Number(e.target.value) || 0)}
+                      placeholder="0"
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-xs text-slate-600 block mb-1">금리 (%)</label>
+                    <input
+                      type="number"
+                      value={loanForm.interestRate || ''}
+                      onChange={e => setLoan('interestRate', Number(e.target.value) || 0)}
+                      placeholder="0.0"
+                      step="0.1"
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-600 block mb-1">시작 (YYYY-MM)</label>
+                    <input
+                      type="month"
+                      value={loanForm.startDate}
+                      onChange={e => setLoan('startDate', e.target.value)}
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-600 block mb-1">만기 (YYYY-MM)</label>
+                    <input
+                      type="month"
+                      value={loanForm.endDate}
+                      onChange={e => setLoan('endDate', e.target.value)}
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-slate-600 block mb-1">메모</label>
+                  <input
+                    type="text"
+                    value={loanForm.memo}
+                    onChange={e => setLoan('memo', e.target.value)}
+                    placeholder="은행명, 특이사항 등"
+                    className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setShowLoanForm(false); setEditingLoanId(null) }}
+                    className="flex-1 py-2.5 border border-slate-300 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-100 transition-colors"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={handleSaveLoan}
+                    disabled={!loanForm.name.trim()}
+                    className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-40 transition-colors"
+                  >
+                    저장
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 

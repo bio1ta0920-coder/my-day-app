@@ -26,6 +26,21 @@ export interface BudgetDayRecord {
   emotion: string | null
 }
 
+export type LoanType = '주택담보대출' | '전세대출' | '자동차할부' | '신용대출' | '학자금대출' | '기타'
+
+export interface LoanItem {
+  id: string
+  name: string
+  type: LoanType
+  totalAmount: number
+  remainingBalance: number
+  monthlyPayment: number
+  interestRate: number   // % 단위
+  startDate: string      // YYYY-MM
+  endDate: string        // YYYY-MM
+  memo: string
+}
+
 export interface BudgetSettings {
   monthlyIncome: number
   monthlySavingsGoal: number
@@ -35,6 +50,7 @@ export interface BudgetSettings {
     savingsGoal?: number
     categoryBudgets?: Record<string, number>
   }>
+  loans: LoanItem[]
 }
 
 // ── 헬스 ──

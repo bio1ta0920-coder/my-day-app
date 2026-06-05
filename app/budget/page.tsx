@@ -169,6 +169,8 @@ export default function BudgetPage() {
   const [y, m] = selectedDate.split('-')
   const monthKey = `${y}-${m}`
   const effective = getEffectiveBudgetSettings(monthKey)
+  const settings = getBudgetSettings()
+  const totalLoanPayment = (settings.loans ?? []).reduce((s, l) => s + l.monthlyPayment, 0)
   const dailyBudget = Math.floor(
     (effective.income - effective.savingsGoal) /
     new Date(parseInt(y), parseInt(m), 0).getDate()
@@ -222,7 +224,7 @@ export default function BudgetPage() {
           </div>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-white/20 flex gap-4">
+        <div className="mt-4 pt-4 border-t border-white/20 flex gap-4 flex-wrap">
           <div>
             <p className="text-red-200 text-xs">이번달 지출</p>
             <p className="text-white font-semibold text-sm">{monthSpent.toLocaleString('ko-KR')}원</p>
@@ -235,6 +237,12 @@ export default function BudgetPage() {
             <p className="text-red-200 text-xs">저축 목표</p>
             <p className="text-white font-semibold text-sm">{effective.savingsGoal.toLocaleString('ko-KR')}원</p>
           </div>
+          {totalLoanPayment > 0 && (
+            <div>
+              <p className="text-red-200 text-xs">월 대출 상환</p>
+              <p className="text-white font-semibold text-sm">{totalLoanPayment.toLocaleString('ko-KR')}원</p>
+            </div>
+          )}
         </div>
       </div>
 
