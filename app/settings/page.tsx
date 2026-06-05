@@ -432,7 +432,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <button onClick={handleSaveBudget} className="w-full py-3 bg-red-600 text-white rounded-xl font-semibold text-sm hover:bg-red-700 transition-colors">
+            <button onClick={handleSaveBudget} className="w-full py-3 bg-pink-400 text-white rounded-xl font-semibold text-sm hover:bg-pink-500 transition-colors">
               저장하기
             </button>
           </div>
@@ -451,7 +451,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => { setLoanForm(emptyLoan()); setEditingLoanId(null); setShowLoanForm(v => !v) }}
-              className="px-3 py-1.5 bg-red-600 text-white rounded-xl text-xs font-semibold hover:bg-red-700 transition-colors"
+              className="px-3 py-1.5 bg-pink-400 text-white rounded-xl text-xs font-semibold hover:bg-pink-500 transition-colors"
             >
               + 추가
             </button>
@@ -466,11 +466,11 @@ export default function SettingsPage() {
                 <div className="flex items-start justify-between mb-1">
                   <div>
                     <span className="font-semibold text-slate-800 text-sm">{loan.name}</span>
-                    <span className="ml-2 text-xs bg-red-50 text-red-500 px-1.5 py-0.5 rounded-full">{loan.type}</span>
+                    <span className="ml-2 text-xs bg-pink-50 text-pink-500 px-1.5 py-0.5 rounded-full">{loan.type}</span>
                   </div>
                   <div className="flex gap-1">
                     <button onClick={() => handleEditLoan(loan)} className="text-xs text-slate-400 hover:text-slate-600 px-2 py-1 rounded-lg hover:bg-slate-200 transition-colors">수정</button>
-                    <button onClick={() => handleDeleteLoan(loan.id)} className="text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50 transition-colors">삭제</button>
+                    <button onClick={() => handleDeleteLoan(loan.id)} className="text-xs text-pink-400 hover:text-pink-600 px-2 py-1 rounded-lg hover:bg-pink-50 transition-colors">삭제</button>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
@@ -485,8 +485,8 @@ export default function SettingsPage() {
 
             {/* 추가/수정 폼 */}
             {showLoanForm && (
-              <div className="bg-red-50 rounded-xl p-3 border border-red-100 space-y-3 fade-in">
-                <p className="text-sm font-semibold text-red-700">{editingLoanId ? '대출 수정' : '대출 추가'}</p>
+              <div className="bg-pink-50 rounded-xl p-3 border border-pink-100 space-y-3 fade-in">
+                <p className="text-sm font-semibold text-pink-700">{editingLoanId ? '대출 수정' : '대출 추가'}</p>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-xs text-slate-600 block mb-1">대출명 *</label>
@@ -495,7 +495,7 @@ export default function SettingsPage() {
                       value={loanForm.name}
                       onChange={e => setLoan('name', e.target.value)}
                       placeholder="예: 전세자금대출"
-                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300"
                     />
                   </div>
                   <div>
@@ -503,7 +503,7 @@ export default function SettingsPage() {
                     <select
                       value={loanForm.type}
                       onChange={e => setLoan('type', e.target.value as LoanType)}
-                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300"
                     >
                       {(['주택담보대출','전세대출','자동차할부','신용대출','학자금대출','기타'] as LoanType[]).map(t => (
                         <option key={t} value={t}>{t}</option>
@@ -519,7 +519,7 @@ export default function SettingsPage() {
                       value={loanForm.monthlyPayment || ''}
                       onChange={e => setLoan('monthlyPayment', Number(e.target.value) || 0)}
                       placeholder="0"
-                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300"
                     />
                   </div>
                   <div>
@@ -529,7 +529,7 @@ export default function SettingsPage() {
                       value={loanForm.remainingBalance || ''}
                       onChange={e => setLoan('remainingBalance', Number(e.target.value) || 0)}
                       placeholder="0"
-                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300"
                     />
                   </div>
                 </div>
@@ -542,7 +542,7 @@ export default function SettingsPage() {
                       onChange={e => setLoan('interestRate', Number(e.target.value) || 0)}
                       placeholder="0.0"
                       step="0.1"
-                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300"
                     />
                   </div>
                   <div>
@@ -551,7 +551,7 @@ export default function SettingsPage() {
                       type="month"
                       value={loanForm.startDate}
                       onChange={e => setLoan('startDate', e.target.value)}
-                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300"
                     />
                   </div>
                   <div>
@@ -560,7 +560,7 @@ export default function SettingsPage() {
                       type="month"
                       value={loanForm.endDate}
                       onChange={e => setLoan('endDate', e.target.value)}
-                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300"
                     />
                   </div>
                 </div>
@@ -571,7 +571,7 @@ export default function SettingsPage() {
                     value={loanForm.memo}
                     onChange={e => setLoan('memo', e.target.value)}
                     placeholder="은행명, 특이사항 등"
-                    className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                    className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300"
                   />
                 </div>
                 <div className="flex gap-2">
@@ -584,7 +584,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSaveLoan}
                     disabled={!loanForm.name.trim()}
-                    className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-40 transition-colors"
+                    className="flex-1 py-2.5 bg-pink-400 text-white rounded-xl text-sm font-semibold hover:bg-pink-500 disabled:opacity-40 transition-colors"
                   >
                     저장
                   </button>
