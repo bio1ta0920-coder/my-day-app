@@ -67,7 +67,7 @@ function ExamModal({ exam, onSave, onClose }: {
   const [name, setName] = useState(exam?.name ?? '')
   const [date, setDate] = useState(exam?.date ?? '')
   const [color, setColor] = useState(exam?.color ?? '#f472b6')
-  const COLORS = ['#f472b6','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6','#ef4444','#14b8a6']
+  const COLORS = ['#f472b6','#f97316','#eab308','#22c55e','#3b82f6','#059669','#ef4444','#14b8a6']
   function save() {
     if (!name.trim() || !date) return
     onSave({ id: exam?.id ?? Date.now().toString(), name: name.trim(), date, color })
@@ -158,7 +158,7 @@ function SubjectSettingsModal({ settings, onSave, onClose }: {
   const [newName, setNewName] = useState('')
   const [newEmoji, setNewEmoji] = useState('📝')
   const [newColor, setNewColor] = useState('#94a3b8')
-  const COLORS = ['#3b82f6','#22c55e','#f97316','#8b5cf6','#eab308','#ef4444','#14b8a6','#f472b6','#94a3b8']
+  const COLORS = ['#3b82f6','#22c55e','#f97316','#059669','#eab308','#ef4444','#14b8a6','#f472b6','#94a3b8']
 
   function addSubject() {
     if (!newName.trim()) return
@@ -679,20 +679,20 @@ export default function StudyPage() {
                 {/* 원형 진행 바 (뽀모도로) */}
                 {isPomodoro && isRunning && (
                   <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">
-                    <circle cx="60" cy="60" r="54" fill="none" stroke="#ede9fe" strokeWidth="8" />
-                    <circle cx="60" cy="60" r="54" fill="none" stroke={selectedSubject?.color ?? '#8b5cf6'} strokeWidth="8"
+                    <circle cx="60" cy="60" r="54" fill="none" stroke="#d1fae5" strokeWidth="8" />
+                    <circle cx="60" cy="60" r="54" fill="none" stroke={selectedSubject?.color ?? '#059669'} strokeWidth="8"
                       strokeDasharray={`${2 * Math.PI * 54}`}
                       strokeDashoffset={`${2 * Math.PI * 54 * (1 - pomodoroProgress / 100)}`}
                       strokeLinecap="round" className="transition-all duration-1000"
                     />
                   </svg>
                 )}
-                <div className="w-32 h-32 rounded-full flex flex-col items-center justify-center" style={{ backgroundColor: isRunning ? `${selectedSubject?.color ?? '#8b5cf6'}15` : '#f8fafc' }}>
-                  <span className="text-3xl font-black tabular-nums" style={{ color: isRunning ? (selectedSubject?.color ?? '#8b5cf6') : '#94a3b8' }}>
+                <div className="w-32 h-32 rounded-full flex flex-col items-center justify-center" style={{ backgroundColor: isRunning ? `${selectedSubject?.color ?? '#059669'}15` : '#f8fafc' }}>
+                  <span className="text-3xl font-black tabular-nums" style={{ color: isRunning ? (selectedSubject?.color ?? '#059669') : '#94a3b8' }}>
                     {isPomodoro && isRunning ? fmtSeconds(pomodoroLeft) : fmtSeconds(timerSeconds)}
                   </span>
                   {isPomodoro && isRunning && (
-                    <span className="text-xs mt-0.5" style={{ color: selectedSubject?.color ?? '#8b5cf6' }}>
+                    <span className="text-xs mt-0.5" style={{ color: selectedSubject?.color ?? '#059669' }}>
                       {isBreak ? '휴식 중 ☕' : '집중 중 🎯'}
                     </span>
                   )}
@@ -705,7 +705,7 @@ export default function StudyPage() {
                     onClick={startTimer}
                     disabled={!selectedSubjectId}
                     className="flex items-center gap-2 px-8 py-3 rounded-2xl text-white font-bold text-base transition-all active:scale-95 disabled:opacity-40"
-                    style={{ backgroundColor: selectedSubject?.color ?? '#8b5cf6' }}
+                    style={{ backgroundColor: selectedSubject?.color ?? '#059669' }}
                   >
                     <Play size={18} fill="white" /> 시작
                   </button>
@@ -747,7 +747,7 @@ export default function StudyPage() {
                     <button
                       onClick={() => toggleTask(task.id)}
                       className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
-                      style={task.completed ? { backgroundColor: subject?.color ?? '#8b5cf6', borderColor: subject?.color ?? '#8b5cf6' } : { borderColor: '#cbd5e1' }}
+                      style={task.completed ? { backgroundColor: subject?.color ?? '#059669', borderColor: subject?.color ?? '#059669' } : { borderColor: '#cbd5e1' }}
                     >
                       {task.completed && <Check size={12} color="white" strokeWidth={3} />}
                     </button>
@@ -780,7 +780,7 @@ export default function StudyPage() {
                 const subject = settings.subjects.find(s => s.id === session.subjectId)
                 return (
                   <div key={session.id} className="px-4 py-3 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style={{ backgroundColor: `${subject?.color ?? '#8b5cf6'}20` }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style={{ backgroundColor: `${subject?.color ?? '#059669'}20` }}>
                       {subject?.emoji ?? '📚'}
                     </div>
                     <div className="flex-1 min-w-0">
