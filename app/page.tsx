@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight, Calendar, Sparkles } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar, Sparkles, Plus, Check, X } from 'lucide-react'
 import {
   getTodayString,
   formatDate,
@@ -15,8 +15,11 @@ import {
   getAllPlannerCategories,
   getDuration,
   formatDuration,
+  getTodos,
+  saveTodos,
+  getTodosForDate,
 } from '@/lib/storage'
-import type { BudgetDayRecord, HealthDayRecord, PlannerDayRecord } from '@/lib/types'
+import type { BudgetDayRecord, HealthDayRecord, PlannerDayRecord, TodoItem } from '@/lib/types'
 
 function formatFeedback(text: string): string {
   const lines = text.split('\n')
@@ -102,6 +105,10 @@ export default function HomePage() {
   const [diaryText, setDiaryText] = useState('')
   const [diarySaved, setDiarySaved] = useState(false)
 
+  // 투두
+  const [todos, setTodos] = useState<TodoItem[]>([])
+  const [todoInput, setTodoInput] = useState('')
+
   const loadDate = useCallback((dateStr: string) => {
     setSelectedDate(dateStr)
 
@@ -133,6 +140,7 @@ export default function HomePage() {
     const dateStr = getTodayString()
     setToday(dateStr)
     loadDate(dateStr)
+    setTodos(getTodosForDate(dateStr))
   }, [loadDate])
 
   const isToday = selectedDate === today
@@ -201,6 +209,29 @@ export default function HomePage() {
     }
   }
 
+  function addTodo() {
+    if (!todoInput.trim()) return
+    const newTodo: TodoItem = { id: Date.now().toString(), text: todoInput.trim(), completed: false, createdDate: today }
+    const all = getTodos()
+    const updated = [...all, newTodo]
+    saveTodos(updated)
+    setTodos(getTodosForDate(today))
+    setTodoInput('')
+  }
+
+  function toggleTodo(id: string) {
+    const all = getTodos()
+    const updated = all.map(t => t.id === id ? { ...t, completed: !t.completed } : t)
+    saveTodos(updated)
+    setTodos(getTodosForDate(today))
+  }
+
+  function deleteTodo(id: string) {
+    const all = getTodos()
+    saveTodos(all.filter(t => t.id !== id))
+    setTodos(getTodosForDate(today))
+  }
+
   const handleSaveDiary = () => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(`unified_diary_${selectedDate}`, diaryText)
@@ -258,6 +289,72 @@ export default function HomePage() {
       </div>
 
       <div className="px-4 mt-4 space-y-3">
+
+        {/* 투두리스트 */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-50 flex items-center justify-between">
+            <h2 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+              ✅ 오늘 할 일
+              <span className="text-xs text-slate-400 font-normal">
+                {todos.filter(t => t.completed).length}/{todos.length}
+              </span>
+            </h2>
+            {todos.filter(t => !t.completed && t.createdDate < today).length > 0 && (
+              <span className="text-xs text-amber-500 font-semibold">
+                🔄 {todos.filter(t => !t.completed && t.createdDate < today).length}개 이월됨
+              </span>
+            )}
+          </div>
+
+          <div className="divide-y divide-slate-50">
+            {todos.length === 0 && (
+              <p className="px-4 py-3 text-sm text-slate-400">오늘 할 일을 추가해보세요</p>
+            )}
+            {todos.map(todo => (
+              <div key={todo.id} className="px-4 py-2.5 flex items-center gap-3">
+                <button
+                  onClick={() => toggleTodo(todo.id)}
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                    todo.completed ? 'bg-emerald-400 border-emerald-400' : todo.createdDate < today ? 'border-amber-300' : 'border-slate-300'
+                  }`}
+                >
+                  {todo.completed && <Check size={10} color="white" strokeWidth={3} />}
+                </button>
+                <span className={`flex-1 text-sm ${todo.completed ? 'line-through text-slate-400' : 'text-slate-700'}`}>
+                  {todo.createdDate < today && !todo.completed && (
+                    <span className="text-xs text-amber-400 mr-1">이월</span>
+                  )}
+                  {todo.text}
+                </span>
+                <button
+                  onClick={() => deleteTodo(todo.id)}
+                  className="w-6 h-6 flex items-center justify-center rounded-lg text-slate-300 hover:bg-red-50 hover:text-red-400 transition-colors flex-shrink-0"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="px-4 py-2.5 border-t border-slate-50 flex gap-2">
+            <input
+              type="text"
+              value={todoInput}
+              onChange={e => setTodoInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addTodo()}
+              placeholder="할 일 추가..."
+              className="flex-1 text-sm px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-pink-300 bg-slate-50 focus:bg-white transition-colors"
+            />
+            <button
+              onClick={addTodo}
+              disabled={!todoInput.trim()}
+              className="w-9 h-9 flex items-center justify-center rounded-xl bg-pink-400 text-white hover:bg-pink-500 disabled:opacity-40 transition-colors flex-shrink-0"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+        </div>
+
         {/* 가계부 카드 */}
         <button
           onClick={() => router.push('/budget')}

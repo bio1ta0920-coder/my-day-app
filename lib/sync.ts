@@ -8,6 +8,7 @@ function isAppKey(key: string): boolean {
     key.startsWith('record_') ||
     key.startsWith('study_') ||
     key === 'book_records' ||
+    key === 'home_todos' ||
     key.startsWith('unified_') ||
     key === 'settings' ||
     key === 'sync_code'

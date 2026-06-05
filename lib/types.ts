@@ -138,6 +138,14 @@ export interface UnifiedSettings {
   apiKey: string
 }
 
+// ── 투두 ──
+export interface TodoItem {
+  id: string
+  text: string
+  completed: boolean
+  createdDate: string  // "YYYY-MM-DD"
+}
+
 // ── 스터디 ──
 export interface StudySubject {
   id: string

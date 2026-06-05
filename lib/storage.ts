@@ -12,6 +12,7 @@ import type {
   StudySettings,
   StudySession,
   BookRecord,
+  TodoItem,
 } from './types'
 import { DEFAULT_BUDGETS, PLANNER_CATEGORIES, DEFAULT_STUDY_SUBJECTS } from './constants'
 import { pushToCloud } from './sync'
@@ -536,6 +537,35 @@ export function syncStudyToPlanner(date: string, sessions: StudySession[]): void
   } catch {
     // ignore
   }
+}
+
+// ──────────────────────────────────────────
+// 투두 Storage
+// ──────────────────────────────────────────
+
+const TODO_KEY = 'home_todos'
+
+export function getTodos(): TodoItem[] {
+  if (!isBrowser) return []
+  try {
+    const raw = localStorage.getItem(TODO_KEY)
+    return raw ? JSON.parse(raw) as TodoItem[] : []
+  } catch { return [] }
+}
+
+export function saveTodos(todos: TodoItem[]): void {
+  if (!isBrowser) return
+  try {
+    const value = JSON.stringify(todos)
+    localStorage.setItem(TODO_KEY, value)
+    pushToCloud(TODO_KEY, value)
+  } catch (e) { console.error('투두 저장 실패:', e) }
+}
+
+// 오늘 기준으로 보여줄 투두 반환 (오늘 생성된 것 + 미완료 이월)
+export function getTodosForDate(date: string): TodoItem[] {
+  const all = getTodos()
+  return all.filter(t => t.createdDate === date || (!t.completed && t.createdDate < date))
 }
 
 // ──────────────────────────────────────────
