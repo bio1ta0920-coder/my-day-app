@@ -191,13 +191,13 @@ export default function HealthPage() {
   return (
     <div className="fade-in">
       {/* 헤더 */}
-      <div className="bg-gradient-to-br from-pink-400 via-pink-300 to-rose-400 text-white pt-12 pb-5 px-4">
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 text-white pt-12 pb-5 px-4">
         <div className="flex items-center justify-between mb-3">
           <button onClick={() => changeDate(-1)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors">
             <ChevronLeft size={18} />
           </button>
           <div className="flex flex-col items-center">
-            <p className="text-sm font-medium text-pink-100">{currentDate ? formatDate(currentDate) : ''}</p>
+            <p className="text-sm font-medium text-slate-300">{currentDate ? formatDate(currentDate) : ''}</p>
             {isToday && <span className="mt-0.5 px-2.5 py-0.5 rounded-full bg-white/25 text-xs font-bold tracking-wide">오늘</span>}
           </div>
           <button onClick={() => changeDate(1)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors">
@@ -251,7 +251,7 @@ export default function HealthPage() {
             <h2 className="font-bold text-slate-800 text-base">오늘의 운동 💪</h2>
             <button
               onClick={() => { setEditingExercise(null); setShowExerciseModal(true) }}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-pink-50 text-pink-400 text-sm font-semibold hover:bg-pink-100 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition-colors"
             >
               <Plus size={15} />
               추가
@@ -303,7 +303,7 @@ export default function HealthPage() {
             <h2 className="font-bold text-slate-800 text-base">오늘의 식단 🍽️</h2>
             <button
               onClick={() => { setEditingFood(null); setShowFoodModal(true) }}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-pink-50 text-pink-400 text-sm font-semibold hover:bg-pink-100 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition-colors"
             >
               <Plus size={15} />
               추가
@@ -333,7 +333,7 @@ export default function HealthPage() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={e => { e.stopPropagation(); setDefaultFoodMealTime(meal.mealTime); setEditingFood(null); setShowFoodModal(true) }}
-                        className="w-6 h-6 flex items-center justify-center rounded-md bg-slate-100 text-slate-500 hover:bg-pink-100 hover:text-pink-400 transition-colors"
+                        className="w-6 h-6 flex items-center justify-center rounded-md bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-900 transition-colors"
                       >
                         <Plus size={13} />
                       </button>
@@ -402,8 +402,8 @@ export default function HealthPage() {
           {record.feedback && (
             <div className="mt-3 bg-white rounded-2xl shadow-sm overflow-hidden fade-in">
               <div className="px-4 py-3 flex items-center gap-2" style={{ background: 'linear-gradient(135deg, #eef2ff, #f5f3ff)' }}>
-                <Sparkles size={16} className="text-pink-400" />
-                <p className="font-bold text-pink-500 text-sm">Claude AI 피드백</p>
+                <Sparkles size={16} className="text-slate-700" />
+                <p className="font-bold text-slate-800 text-sm">Claude AI 피드백</p>
               </div>
               <div
                 className="px-4 py-4 text-sm text-slate-700 feedback-text leading-relaxed"
@@ -452,7 +452,7 @@ export default function HealthPage() {
                       <button
                         key={n}
                         onClick={() => setRecord({ ...record, emotionIntensity: record.emotionIntensity === n ? null : n })}
-                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all ${(record.emotionIntensity ?? 0) >= n ? 'border-pink-400 bg-pink-400 text-white' : 'border-slate-200 bg-white text-slate-400 hover:border-pink-200'}`}
+                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all ${(record.emotionIntensity ?? 0) >= n ? 'border-slate-800 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'}`}
                       >
                         {n}
                       </button>
@@ -469,7 +469,7 @@ export default function HealthPage() {
                   onChange={e => setRecord({ ...record, diaryText: e.target.value })}
                   placeholder="오늘 식단과 운동을 돌아보며..."
                   rows={4}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100 resize-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 resize-none"
                 />
               </div>
 
@@ -480,7 +480,7 @@ export default function HealthPage() {
                   value={record.tomorrowGoal ?? ''}
                   onChange={e => setRecord({ ...record, tomorrowGoal: e.target.value })}
                   placeholder="내일은 무엇을 실천할 건가요?"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
                 />
               </div>
 

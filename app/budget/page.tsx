@@ -180,7 +180,7 @@ export default function BudgetPage() {
   return (
     <div className="pb-24">
       {/* 헤더 */}
-      <div className="bg-gradient-to-br from-pink-400 via-pink-300 to-rose-400 text-white px-5 pt-12 pb-6">
+      <div className="bg-gradient-to-br from-red-700 via-red-600 to-rose-700 text-white px-5 pt-12 pb-6">
         <div className="flex items-center justify-between mb-3">
           <button onClick={() => loadDate(addDays(selectedDate, -1))} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all">
             <ChevronLeft size={18} />
@@ -201,11 +201,11 @@ export default function BudgetPage() {
 
         <div className="flex items-end justify-between mb-4">
           <div>
-            <p className="text-pink-200 text-xs mb-0.5">{isToday ? '오늘 지출' : '지출'}</p>
+            <p className="text-red-200 text-xs mb-0.5">{isToday ? '오늘 지출' : '지출'}</p>
             <p className="text-3xl font-bold tracking-tight">{totalSpent.toLocaleString('ko-KR')}원</p>
           </div>
           <div className="text-right">
-            <p className="text-pink-200 text-xs mb-0.5">{remaining >= 0 ? '남은 예산' : '초과'}</p>
+            <p className="text-red-200 text-xs mb-0.5">{remaining >= 0 ? '남은 예산' : '초과'}</p>
             <p className={`text-xl font-semibold ${remaining < 0 ? 'text-red-300' : 'text-emerald-300'}`}>
               {Math.abs(remaining).toLocaleString('ko-KR')}원
             </p>
@@ -213,7 +213,7 @@ export default function BudgetPage() {
         </div>
 
         <div>
-          <div className="flex justify-between text-xs text-pink-200 mb-1.5">
+          <div className="flex justify-between text-xs text-red-200 mb-1.5">
             <span>일일 예산 {dailyBudget.toLocaleString('ko-KR')}원</span>
             <span>{Math.round(spentPct)}% 사용</span>
           </div>
@@ -224,15 +224,15 @@ export default function BudgetPage() {
 
         <div className="mt-4 pt-4 border-t border-white/20 flex gap-4">
           <div>
-            <p className="text-pink-200 text-xs">이번달 지출</p>
+            <p className="text-red-200 text-xs">이번달 지출</p>
             <p className="text-white font-semibold text-sm">{monthSpent.toLocaleString('ko-KR')}원</p>
           </div>
           <div>
-            <p className="text-pink-200 text-xs">월 예산</p>
+            <p className="text-red-200 text-xs">월 예산</p>
             <p className="text-white font-semibold text-sm">{monthBudget.toLocaleString('ko-KR')}원</p>
           </div>
           <div>
-            <p className="text-pink-200 text-xs">저축 목표</p>
+            <p className="text-red-200 text-xs">저축 목표</p>
             <p className="text-white font-semibold text-sm">{effective.savingsGoal.toLocaleString('ko-KR')}원</p>
           </div>
         </div>
@@ -245,12 +245,12 @@ export default function BudgetPage() {
             <h2 className="text-base font-bold text-slate-800">
               {isToday ? '오늘 지출 내역' : '지출 내역'}
               {record.expenses.length > 0 && (
-                <span className="ml-2 text-sm font-medium text-pink-400">{record.expenses.length}건</span>
+                <span className="ml-2 text-sm font-medium text-red-400">{record.expenses.length}건</span>
               )}
             </h2>
             <button
               onClick={() => { setEditingExpense(null); setShowAddModal(true) }}
-              className="flex items-center gap-1.5 bg-pink-400 text-white px-3 py-1.5 rounded-xl text-sm font-semibold shadow-sm hover:bg-pink-500 active:scale-95 transition-all"
+              className="flex items-center gap-1.5 bg-red-600 text-white px-3 py-1.5 rounded-xl text-sm font-semibold shadow-sm hover:bg-red-700 active:scale-95 transition-all"
             >
               <Plus size={14} />
               추가
@@ -278,7 +278,7 @@ export default function BudgetPage() {
             <button
               onClick={handleGetFeedback}
               disabled={isLoadingFeedback || record.expenses.length === 0}
-              className="w-full py-4 bg-gradient-to-r from-pink-500 to-pink-400 text-white rounded-2xl font-bold text-base shadow-lg shadow-pink-200 hover:shadow-xl active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-4 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-2xl font-bold text-base shadow-lg shadow-red-200 hover:shadow-xl active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoadingFeedback ? (
                 <>
@@ -291,9 +291,9 @@ export default function BudgetPage() {
             </button>
           ) : (
             <div className="flex gap-2">
-              <div className="flex-1 flex items-center gap-2 bg-pink-50 border border-pink-100 rounded-2xl px-4 py-3">
-                <Sparkles size={16} className="text-pink-400 flex-shrink-0" />
-                <span className="text-sm text-pink-500 font-medium">AI 피드백 완료</span>
+              <div className="flex-1 flex items-center gap-2 bg-red-50 border border-red-100 rounded-2xl px-4 py-3">
+                <Sparkles size={16} className="text-red-400 flex-shrink-0" />
+                <span className="text-sm text-red-500 font-medium">AI 피드백 완료</span>
               </div>
               <button
                 onClick={handleGetFeedback}
@@ -312,9 +312,9 @@ export default function BudgetPage() {
 
         {/* AI 피드백 내용 */}
         {record.feedback && (
-          <div className="bg-white rounded-2xl border border-pink-100 shadow-sm p-4 fade-in">
+          <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-4 fade-in">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 bg-gradient-to-br from-pink-400 to-pink-400 rounded-lg flex items-center justify-center">
+              <div className="w-7 h-7 bg-gradient-to-br from-red-600 to-red-500 rounded-lg flex items-center justify-center">
                 <Sparkles size={14} className="text-white" />
               </div>
               <h3 className="font-bold text-slate-800">AI 피드백</h3>
@@ -346,7 +346,7 @@ export default function BudgetPage() {
                         key={opt.value}
                         onClick={() => setSatisfaction(opt.value)}
                         className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border-2 transition-all ${
-                          satisfaction === opt.value ? 'border-pink-300 bg-pink-50 scale-105' : 'border-slate-100 bg-slate-50 hover:border-slate-200'
+                          satisfaction === opt.value ? 'border-red-300 bg-red-50 scale-105' : 'border-slate-100 bg-slate-50 hover:border-slate-200'
                         }`}
                       >
                         <span className="text-xl">{opt.emoji}</span>
@@ -360,7 +360,7 @@ export default function BudgetPage() {
                   <select
                     value={emotion}
                     onChange={e => setEmotion(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-pink-300 focus:outline-none text-sm bg-slate-50 focus:bg-white text-slate-700"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-red-300 focus:outline-none text-sm bg-slate-50 focus:bg-white text-slate-700"
                   >
                     <option value="">감정을 선택하세요</option>
                     {BUDGET_EMOTIONS.map(em => <option key={em} value={em}>{em}</option>)}
@@ -373,12 +373,12 @@ export default function BudgetPage() {
                     onChange={e => setDiaryText(e.target.value)}
                     placeholder="오늘의 소비를 돌아보며... 잘한 것, 아쉬운 것, 내일의 다짐 등을 자유롭게 적어보세요."
                     rows={4}
-                    className="w-full px-3 py-3 rounded-xl border border-slate-200 focus:border-pink-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors resize-none text-slate-700 leading-relaxed"
+                    className="w-full px-3 py-3 rounded-xl border border-slate-200 focus:border-red-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors resize-none text-slate-700 leading-relaxed"
                   />
                 </div>
                 <button
                   onClick={handleSaveDiary}
-                  className={`w-full py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 ${diarySaved ? 'bg-emerald-500 text-white' : 'bg-pink-400 text-white hover:bg-pink-500'}`}
+                  className={`w-full py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 ${diarySaved ? 'bg-emerald-500 text-white' : 'bg-red-600 text-white hover:bg-red-700'}`}
                 >
                   {diarySaved ? '✓ 저장됐어요!' : '저장하기'}
                 </button>
@@ -414,7 +414,7 @@ export default function BudgetPage() {
                     <button
                       key={opt.value}
                       onClick={() => setSatisfaction(opt.value)}
-                      className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border-2 transition-all ${satisfaction === opt.value ? 'border-pink-300 bg-pink-50 scale-105' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}`}
+                      className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border-2 transition-all ${satisfaction === opt.value ? 'border-red-300 bg-red-50 scale-105' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}`}
                     >
                       <span className="text-xl">{opt.emoji}</span>
                       <span className="text-xs text-slate-500 font-medium">{opt.label}</span>
@@ -424,7 +424,7 @@ export default function BudgetPage() {
               </div>
               <div>
                 <label className="text-sm font-semibold text-slate-700 block mb-2">오늘의 감정</label>
-                <select value={emotion} onChange={e => setEmotion(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-pink-300 focus:outline-none text-sm bg-slate-50 focus:bg-white text-slate-700">
+                <select value={emotion} onChange={e => setEmotion(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-red-300 focus:outline-none text-sm bg-slate-50 focus:bg-white text-slate-700">
                   <option value="">감정을 선택하세요</option>
                   {BUDGET_EMOTIONS.map(em => <option key={em} value={em}>{em}</option>)}
                 </select>
@@ -436,12 +436,12 @@ export default function BudgetPage() {
                   onChange={e => setDiaryText(e.target.value)}
                   placeholder="오늘의 소비를 돌아보며..."
                   rows={4}
-                  className="w-full px-3 py-3 rounded-xl border border-slate-200 focus:border-pink-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors resize-none text-slate-700 leading-relaxed"
+                  className="w-full px-3 py-3 rounded-xl border border-slate-200 focus:border-red-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors resize-none text-slate-700 leading-relaxed"
                 />
               </div>
               <button
                 onClick={handleSaveDiary}
-                className={`w-full py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 ${diarySaved ? 'bg-emerald-500 text-white' : 'bg-pink-400 text-white hover:bg-pink-500'}`}
+                className={`w-full py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 ${diarySaved ? 'bg-emerald-500 text-white' : 'bg-red-600 text-white hover:bg-red-700'}`}
               >
                 {diarySaved ? '✓ 저장됐어요!' : '저장하기'}
               </button>

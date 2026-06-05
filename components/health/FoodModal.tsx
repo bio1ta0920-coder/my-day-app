@@ -126,7 +126,7 @@ export default function FoodModal({ onClose, onSave, initialData, defaultMealTim
                 value={mealStartTime}
                 step={300}
                 onChange={e => setMealStartTime(e.target.value)}
-                className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
+                className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
               />
               <span className="text-slate-400 text-sm font-medium">~</span>
               <input
@@ -134,7 +134,7 @@ export default function FoodModal({ onClose, onSave, initialData, defaultMealTim
                 value={mealEndTime}
                 step={300}
                 onChange={e => setMealEndTime(e.target.value)}
-                className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
+                className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
               />
             </div>
           </div>
@@ -147,7 +147,7 @@ export default function FoodModal({ onClose, onSave, initialData, defaultMealTim
                   <button
                     key={fav.id}
                     onClick={() => applyFavorite(fav)}
-                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-pink-200 hover:bg-pink-50 transition-colors"
+                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-slate-300 hover:bg-pink-50 transition-colors"
                   >
                     <span>🍽️</span>
                     <span>{fav.name}</span>
@@ -165,7 +165,7 @@ export default function FoodModal({ onClose, onSave, initialData, defaultMealTim
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="예: 현미밥, 닭가슴살, 사과"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
             />
           </div>
 
@@ -178,14 +178,14 @@ export default function FoodModal({ onClose, onSave, initialData, defaultMealTim
                 onChange={e => setCalories(e.target.value === '' ? '' : Number(e.target.value))}
                 placeholder="0"
                 min={0}
-                className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
+                className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
               />
               <span className="text-sm text-slate-500 font-medium">kcal</span>
               <button
                 type="button"
                 onClick={estimateCalories}
                 disabled={!name.trim() || caloriesLoading}
-                className="flex items-center gap-1 px-3 py-2.5 rounded-xl bg-pink-50 text-pink-400 text-xs font-semibold hover:bg-pink-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                className="flex items-center gap-1 px-3 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
               >
                 {caloriesLoading ? (
                   <span className="w-3.5 h-3.5 border-2 border-pink-200 border-t-pink-400 rounded-full animate-spin" />
@@ -205,7 +205,7 @@ export default function FoodModal({ onClose, onSave, initialData, defaultMealTim
               value={amount}
               onChange={e => setAmount(e.target.value)}
               placeholder="예: 1공기, 200g, 1개"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
             />
           </div>
 
@@ -216,7 +216,7 @@ export default function FoodModal({ onClose, onSave, initialData, defaultMealTim
               onChange={e => setNotes(e.target.value)}
               placeholder="특이사항, 조리방법 등"
               rows={2}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100 resize-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 resize-none"
             />
           </div>
         </div>
@@ -226,7 +226,7 @@ export default function FoodModal({ onClose, onSave, initialData, defaultMealTim
         <button
           onClick={handleSave}
           disabled={!name.trim()}
-          className="w-full py-3.5 rounded-xl bg-pink-400 text-white font-bold text-base hover:bg-pink-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="w-full py-3.5 rounded-xl bg-slate-800 text-white font-bold text-base hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           저장하기
         </button>

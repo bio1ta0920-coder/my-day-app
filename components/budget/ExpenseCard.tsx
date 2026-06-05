@@ -35,7 +35,7 @@ export default function ExpenseCard({ expense, onEdit, onDelete }: Props) {
             <span className="text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full flex-shrink-0">고정</span>
           )}
           {expense.isDate && (
-            <span className="text-xs bg-pink-50 text-pink-500 px-1.5 py-0.5 rounded-full flex-shrink-0">💑 데이트</span>
+            <span className="text-xs bg-red-50 text-red-500 px-1.5 py-0.5 rounded-full flex-shrink-0">💑 데이트</span>
           )}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -54,7 +54,7 @@ export default function ExpenseCard({ expense, onEdit, onDelete }: Props) {
         <div className="flex gap-1">
           <button
             onClick={() => onEdit(expense)}
-            className="w-7 h-7 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-pink-100 hover:text-pink-400 transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-red-100 hover:text-red-400 transition-colors"
           >
             <Pencil size={12} />
           </button>

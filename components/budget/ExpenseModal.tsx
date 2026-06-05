@@ -84,9 +84,9 @@ export default function ExpenseModal({ expense, onSave, onClose }: Props) {
                 autoFocus
               />
             </div>
-            <div className="mt-2 h-px bg-gradient-to-r from-transparent via-pink-200 to-transparent" />
+            <div className="mt-2 h-px bg-gradient-to-r from-transparent via-red-200 to-transparent" />
             {amountStr && (
-              <p className="text-sm text-pink-400 mt-1 font-medium">
+              <p className="text-sm text-red-400 mt-1 font-medium">
                 {parseInt(amountStr).toLocaleString('ko-KR')}원
               </p>
             )}
@@ -121,7 +121,7 @@ export default function ExpenseModal({ expense, onSave, onClose }: Props) {
                 value={form.name}
                 onChange={e => set('name', e.target.value)}
                 placeholder="예: 점심식사"
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-pink-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-red-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors"
               />
             </div>
             <div>
@@ -131,7 +131,7 @@ export default function ExpenseModal({ expense, onSave, onClose }: Props) {
                 value={form.merchant}
                 onChange={e => set('merchant', e.target.value)}
                 placeholder="예: 스타벅스"
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-pink-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-red-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors"
               />
             </div>
           </div>
@@ -145,7 +145,7 @@ export default function ExpenseModal({ expense, onSave, onClose }: Props) {
                   key={method}
                   onClick={() => set('paymentMethod', method)}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                    form.paymentMethod === method ? 'bg-pink-400 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    form.paymentMethod === method ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
                   {method}
@@ -164,7 +164,7 @@ export default function ExpenseModal({ expense, onSave, onClose }: Props) {
                     key={card}
                     onClick={() => set('card', form.card === card ? '' : card)}
                     className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                      form.card === card ? 'bg-pink-400 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      form.card === card ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
                     {card}
@@ -176,7 +176,7 @@ export default function ExpenseModal({ expense, onSave, onClose }: Props) {
                 value={form.card}
                 onChange={e => set('card', e.target.value)}
                 placeholder="직접 입력..."
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-pink-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-red-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors"
               />
             </div>
           )}
@@ -217,15 +217,15 @@ export default function ExpenseModal({ expense, onSave, onClose }: Props) {
             type="button"
             onClick={() => set('isDate', !form.isDate)}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-2 transition-all ${
-              form.isDate ? 'border-pink-400 bg-pink-50' : 'border-slate-200 bg-slate-50 hover:border-slate-300'
+              form.isDate ? 'border-red-500 bg-red-50' : 'border-slate-200 bg-slate-50 hover:border-slate-300'
             }`}
           >
             <span className="text-2xl">💑</span>
             <div className="flex-1 text-left">
-              <p className={`text-sm font-semibold ${form.isDate ? 'text-pink-600' : 'text-slate-700'}`}>데이트 지출</p>
+              <p className={`text-sm font-semibold ${form.isDate ? 'text-red-600' : 'text-slate-700'}`}>데이트 지출</p>
               <p className="text-xs text-slate-400">데이트 중에 쓴 비용인가요?</p>
             </div>
-            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.isDate ? 'border-pink-500 bg-pink-500' : 'border-slate-300'}`}>
+            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${form.isDate ? 'border-red-600 bg-red-600' : 'border-slate-300'}`}>
               {form.isDate && <span className="text-white text-xs font-bold">✓</span>}
             </div>
           </button>
@@ -234,7 +234,7 @@ export default function ExpenseModal({ expense, onSave, onClose }: Props) {
           <div>
             <button
               onClick={() => setShowExtra(!showExtra)}
-              className="flex items-center gap-1 text-sm text-pink-400 font-medium"
+              className="flex items-center gap-1 text-sm text-red-400 font-medium"
             >
               {showExtra ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               {showExtra ? '접기' : '더 입력하기'}
@@ -248,7 +248,7 @@ export default function ExpenseModal({ expense, onSave, onClose }: Props) {
                     value={form.reason}
                     onChange={e => set('reason', e.target.value)}
                     placeholder="왜 구매했나요?"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-pink-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-red-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors"
                   />
                 </div>
                 <div>
@@ -258,7 +258,7 @@ export default function ExpenseModal({ expense, onSave, onClose }: Props) {
                     onChange={e => set('notes', e.target.value)}
                     placeholder="추가 메모..."
                     rows={2}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-pink-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors resize-none"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-red-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors resize-none"
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -276,7 +276,7 @@ export default function ExpenseModal({ expense, onSave, onClose }: Props) {
                       value={form.installmentMonths || ''}
                       onChange={e => set('installmentMonths', parseInt(e.target.value) || 0)}
                       placeholder="개월수"
-                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-pink-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-red-300 focus:outline-none text-sm bg-slate-50 focus:bg-white transition-colors"
                     />
                   </div>
                 )}
@@ -286,7 +286,7 @@ export default function ExpenseModal({ expense, onSave, onClose }: Props) {
 
           <button
             onClick={handleSave}
-            className="w-full py-4 bg-gradient-to-r from-pink-400 to-pink-400 text-white rounded-2xl font-bold text-base shadow-lg shadow-pink-200 hover:shadow-pink-200 active:scale-95 transition-all"
+            className="w-full py-4 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-2xl font-bold text-base shadow-lg shadow-red-200 hover:shadow-red-200 active:scale-95 transition-all"
           >
             저장하기
           </button>

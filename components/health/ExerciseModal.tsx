@@ -100,7 +100,7 @@ export default function ExerciseModal({ onClose, onSave, initialData, favorites 
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="예: 런닝, 헬스, 수영"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
             />
           </div>
 
@@ -111,7 +111,7 @@ export default function ExerciseModal({ onClose, onSave, initialData, favorites 
                 <button
                   key={cat.id}
                   onClick={() => setCategory(cat.id)}
-                  className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${category === cat.id ? 'border-pink-300 bg-pink-50 text-pink-500' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}
+                  className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${category === cat.id ? 'border-slate-700 bg-slate-100 text-slate-800' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}
                 >
                   <span className="text-lg">{cat.emoji}</span>
                   <span>{cat.id}</span>
@@ -128,7 +128,7 @@ export default function ExerciseModal({ onClose, onSave, initialData, favorites 
               type="time"
               value={startTime}
               onChange={e => setStartTime(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
             />
           </div>
 
@@ -139,7 +139,7 @@ export default function ExerciseModal({ onClose, onSave, initialData, favorites 
                 <button
                   key={d}
                   onClick={() => setDuration(d)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${duration === d ? 'bg-pink-400 text-white border-pink-400' : 'bg-white text-slate-600 border-slate-200 hover:border-pink-200'}`}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${duration === d ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200 hover:border-pink-200'}`}
                 >
                   {d}분
                 </button>
@@ -150,7 +150,7 @@ export default function ExerciseModal({ onClose, onSave, initialData, favorites 
               value={duration}
               onChange={e => setDuration(Number(e.target.value))}
               min={1}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
             />
           </div>
 
@@ -163,7 +163,7 @@ export default function ExerciseModal({ onClose, onSave, initialData, favorites 
                   <button
                     key={key}
                     onClick={() => setIntensity(key)}
-                    className={`py-3 rounded-xl border text-sm font-semibold flex flex-col items-center gap-1 transition-all ${intensity === key ? 'border-pink-300 bg-pink-50 text-pink-500' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}
+                    className={`py-3 rounded-xl border text-sm font-semibold flex flex-col items-center gap-1 transition-all ${intensity === key ? 'border-slate-700 bg-slate-100 text-slate-800' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}
                   >
                     <span className="text-xl">{info.emoji}</span>
                     <span>{info.label}</span>
@@ -182,7 +182,7 @@ export default function ExerciseModal({ onClose, onSave, initialData, favorites 
                 onChange={e => setCalories(e.target.value === '' ? '' : Number(e.target.value))}
                 placeholder="0"
                 min={0}
-                className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
+                className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
               />
               <span className="text-sm text-slate-500 font-medium">kcal</span>
             </div>
@@ -195,7 +195,7 @@ export default function ExerciseModal({ onClose, onSave, initialData, favorites 
               onChange={e => setNotes(e.target.value)}
               placeholder="오늘 운동 느낌, 특이사항 등"
               rows={2}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100 resize-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 resize-none"
             />
           </div>
         </div>
@@ -205,7 +205,7 @@ export default function ExerciseModal({ onClose, onSave, initialData, favorites 
         <button
           onClick={handleSave}
           disabled={!name.trim()}
-          className="w-full py-3.5 rounded-xl bg-pink-400 text-white font-bold text-base hover:bg-pink-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="w-full py-3.5 rounded-xl bg-slate-800 text-white font-bold text-base hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           저장하기
         </button>
