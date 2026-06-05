@@ -183,7 +183,7 @@ export default function HealthPage() {
   if (!record) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="spinner" style={{ borderColor: 'rgba(99,102,241,0.3)', borderTopColor: '#6366f1' }} />
+        <div className="spinner" style={{ borderColor: 'rgba(30,41,59,0.2)', borderTopColor: '#1e293b' }} />
       </div>
     )
   }
@@ -384,7 +384,7 @@ export default function HealthPage() {
             onClick={getFeedback}
             disabled={feedbackLoading}
             className="w-full py-4 rounded-2xl font-bold text-white text-base flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-70"
-            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+            style={{ background: 'linear-gradient(135deg, #1e293b, #334155)' }}
           >
             {feedbackLoading ? (
               <><div className="spinner" /><span>Claude가 분석하고 있어요...</span></>
@@ -401,7 +401,7 @@ export default function HealthPage() {
 
           {record.feedback && (
             <div className="mt-3 bg-white rounded-2xl shadow-sm overflow-hidden fade-in">
-              <div className="px-4 py-3 flex items-center gap-2" style={{ background: 'linear-gradient(135deg, #eef2ff, #f5f3ff)' }}>
+              <div className="px-4 py-3 flex items-center gap-2" style={{ background: 'linear-gradient(135deg, #f1f5f9, #e2e8f0)' }}>
                 <Sparkles size={16} className="text-slate-700" />
                 <p className="font-bold text-slate-800 text-sm">Claude AI 피드백</p>
               </div>
