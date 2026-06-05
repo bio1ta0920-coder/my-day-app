@@ -270,24 +270,24 @@ function BookModal({ book, onSave, onClose }: {
         <div className="grid grid-cols-2 gap-2">
           {(['completed', 'wishlist'] as const).map(s => (
             <button key={s} onClick={() => setStatus(s)}
-              className={`py-2.5 rounded-xl border text-sm font-semibold transition-all ${status === s ? 'border-violet-400 bg-violet-50 text-violet-600' : 'border-slate-200 bg-white text-slate-500'}`}>
+              className={`py-2.5 rounded-xl border text-sm font-semibold transition-all ${status === s ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-500'}`}>
               {s === 'completed' ? '✅ 완독' : '🔖 위시리스트'}
             </button>
           ))}
         </div>
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">책 제목 <span className="text-red-500">*</span></label>
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="책 제목을 입력하세요" className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100" />
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="책 제목을 입력하세요" className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100" />
         </div>
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">저자 <span className="text-slate-400 font-normal">(선택)</span></label>
-          <input type="text" value={author} onChange={e => setAuthor(e.target.value)} placeholder="저자명" className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100" />
+          <input type="text" value={author} onChange={e => setAuthor(e.target.value)} placeholder="저자명" className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100" />
         </div>
         {status === 'completed' && (
           <>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">완독 날짜</label>
-              <input type="date" value={completedDate} onChange={e => setCompletedDate(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100" />
+              <input type="date" value={completedDate} onChange={e => setCompletedDate(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100" />
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">이 책 어땠나요? <span className="text-slate-400 font-normal">(선택)</span></label>
@@ -305,13 +305,13 @@ function BookModal({ book, onSave, onClose }: {
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">한줄평 <span className="text-slate-400 font-normal">(선택)</span></label>
               <textarea value={review} onChange={e => setReview(e.target.value)} placeholder="이 책에 대한 한줄평을 남겨보세요" rows={2}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100 resize-none" />
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 resize-none" />
             </div>
           </>
         )}
       </div>
       <div className="px-4 py-4 border-t border-slate-100">
-        <button onClick={save} disabled={!title.trim()} className="w-full py-3.5 rounded-xl bg-violet-500 text-white font-bold disabled:opacity-40">저장하기</button>
+        <button onClick={save} disabled={!title.trim()} className="w-full py-3.5 rounded-xl bg-emerald-600 text-white font-bold disabled:opacity-40">저장하기</button>
       </div>
     </div>
   )
@@ -511,13 +511,13 @@ export default function StudyPage() {
   return (
     <div className="fade-in">
       {/* 헤더 */}
-      <div className="bg-gradient-to-br from-violet-500 via-purple-400 to-indigo-500 text-white pt-12 pb-5 px-4">
+      <div className="bg-gradient-to-br from-emerald-800 via-teal-700 to-emerald-700 text-white pt-12 pb-5 px-4">
         <div className="flex items-center justify-between mb-3">
           <button onClick={() => changeDate(-1)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors">
             <ChevronLeft size={18} />
           </button>
           <div className="flex flex-col items-center">
-            <p className="text-sm font-medium text-violet-100">{currentDate ? formatDate(currentDate) : ''}</p>
+            <p className="text-sm font-medium text-emerald-100">{currentDate ? formatDate(currentDate) : ''}</p>
             {isToday && <span className="mt-0.5 px-2.5 py-0.5 rounded-full bg-white/25 text-xs font-bold">오늘</span>}
           </div>
           <button onClick={() => changeDate(1)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors">
@@ -542,10 +542,10 @@ export default function StudyPage() {
 
       {/* 공부/독서 탭 */}
       <div className="px-4 pt-4 flex gap-2">
-        <button onClick={() => setActiveTab('study')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'study' ? 'bg-violet-500 text-white' : 'bg-white text-slate-500 border border-slate-200'}`}>
+        <button onClick={() => setActiveTab('study')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'study' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-500 border border-slate-200'}`}>
           📚 공부
         </button>
-        <button onClick={() => setActiveTab('books')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'books' ? 'bg-violet-500 text-white' : 'bg-white text-slate-500 border border-slate-200'}`}>
+        <button onClick={() => setActiveTab('books')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'books' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-500 border border-slate-200'}`}>
           📖 독서 기록
         </button>
       </div>
@@ -558,7 +558,7 @@ export default function StudyPage() {
               const count = books.filter(b => b.status === t).length
               return (
                 <button key={t} onClick={() => setBookTab(t)}
-                  className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-all ${bookTab === t ? 'border-violet-400 bg-violet-50 text-violet-600' : 'border-slate-200 bg-white text-slate-500'}`}>
+                  className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-all ${bookTab === t ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-500'}`}>
                   {t === 'completed' ? `✅ 완독 ${count}권` : `🔖 위시리스트 ${count}권`}
                 </button>
               )
@@ -566,7 +566,7 @@ export default function StudyPage() {
           </div>
 
           <button onClick={() => { setEditingBook(null); setShowBookModal(true) }}
-            className="w-full py-3 rounded-xl border-2 border-dashed border-violet-200 text-violet-400 text-sm font-semibold hover:bg-violet-50 transition-colors flex items-center justify-center gap-2">
+            className="w-full py-3 rounded-xl border-2 border-dashed border-emerald-200 text-emerald-500 text-sm font-semibold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2">
             <Plus size={15} /> {bookTab === 'completed' ? '완독 책 추가' : '위시리스트 추가'}
           </button>
 
@@ -590,7 +590,7 @@ export default function StudyPage() {
                           {book.rating === 'bad' && <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-500 font-semibold flex items-center gap-1"><ThumbsDown size={10} /> 별로에요</span>}
                         </div>
                         {book.author && <p className="text-xs text-slate-400 mt-0.5">{book.author}</p>}
-                        {book.completedDate && <p className="text-xs text-violet-400 mt-0.5">완독 {book.completedDate}</p>}
+                        {book.completedDate && <p className="text-xs text-emerald-500 mt-0.5">완독 {book.completedDate}</p>}
                         {book.review && <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">"{book.review}"</p>}
                       </div>
                       <button onClick={e => { e.stopPropagation(); deleteBook(book.id) }}
@@ -604,9 +604,9 @@ export default function StudyPage() {
           )}
 
           {bookTab === 'completed' && books.filter(b => b.status === 'completed').length > 0 && (
-            <div className="bg-violet-50 rounded-2xl px-4 py-3 text-center">
-              <p className="text-violet-600 font-bold text-lg">{books.filter(b => b.status === 'completed').length}권</p>
-              <p className="text-violet-400 text-xs mt-0.5">올해 완독한 책</p>
+            <div className="bg-emerald-50 rounded-2xl px-4 py-3 text-center">
+              <p className="text-emerald-700 font-bold text-lg">{books.filter(b => b.status === 'completed').length}권</p>
+              <p className="text-emerald-500 text-xs mt-0.5">올해 완독한 책</p>
             </div>
           )}
         </div>
@@ -617,7 +617,7 @@ export default function StudyPage() {
         <section>
           <div className="flex items-center justify-between mb-2">
             <h2 className="font-bold text-slate-700 text-sm flex items-center gap-1.5"><Trophy size={14} className="text-amber-400" /> 시험 D-day</h2>
-            <button onClick={() => { setEditingExam(null); setShowExamModal(true) }} className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-violet-50 text-violet-500 text-xs font-semibold hover:bg-violet-100">
+            <button onClick={() => { setEditingExam(null); setShowExamModal(true) }} className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-semibold hover:bg-emerald-100">
               <Plus size={12} /> 추가
             </button>
           </div>
@@ -649,10 +649,10 @@ export default function StudyPage() {
         {/* 타이머 */}
         <section className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-50 flex items-center justify-between">
-            <h2 className="font-bold text-slate-800 text-base flex items-center gap-1.5"><Clock size={16} className="text-violet-400" /> 공부 타이머</h2>
+            <h2 className="font-bold text-slate-800 text-base flex items-center gap-1.5"><Clock size={16} className="text-emerald-500" /> 공부 타이머</h2>
             <button
               onClick={() => setIsPomodoro(p => !p)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${isPomodoro ? 'bg-violet-500 text-white' : 'bg-slate-100 text-slate-500'}`}
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${isPomodoro ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}
             >
               🍅 뽀모도로
             </button>
@@ -729,10 +729,10 @@ export default function StudyPage() {
         <section className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-50">
             <h2 className="font-bold text-slate-800 text-base flex items-center gap-1.5">
-              <Target size={16} className="text-violet-400" /> 오늘의 할 일
+              <Target size={16} className="text-emerald-500" /> 오늘의 할 일
               <span className="text-xs text-slate-400 font-normal">{completedTasks}/{record.tasks.length}</span>
             </h2>
-            <button onClick={() => setShowTaskModal(true)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-violet-50 text-violet-500 text-sm font-semibold hover:bg-violet-100">
+            <button onClick={() => setShowTaskModal(true)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-sm font-semibold hover:bg-emerald-100">
               <Plus size={15} /> 추가
             </button>
           </div>
@@ -769,7 +769,7 @@ export default function StudyPage() {
         <section className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="px-4 py-3.5 border-b border-slate-50">
             <h2 className="font-bold text-slate-800 text-base flex items-center gap-1.5">
-              <BookOpen size={16} className="text-violet-400" /> 오늘 공부 기록
+              <BookOpen size={16} className="text-emerald-500" /> 오늘 공부 기록
             </h2>
           </div>
           <div className="divide-y divide-slate-50">
