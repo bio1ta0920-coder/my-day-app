@@ -6,6 +6,7 @@ function isAppKey(key: string): boolean {
     key.startsWith('gaegyebu_') ||
     key.startsWith('health_diary_') ||
     key.startsWith('record_') ||
+    key.startsWith('study_') ||
     key.startsWith('unified_') ||
     key === 'settings' ||
     key === 'sync_code'

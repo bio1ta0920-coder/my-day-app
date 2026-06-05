@@ -137,3 +137,49 @@ export interface PlannerSettings {
 export interface UnifiedSettings {
   apiKey: string
 }
+
+// ── 스터디 ──
+export interface StudySubject {
+  id: string
+  name: string
+  color: string
+  emoji: string
+  weeklyGoalMinutes: number
+}
+
+export interface StudySession {
+  id: string
+  subjectId: string
+  duration: number      // 분
+  startTime?: string    // "HH:MM"
+  endTime?: string      // "HH:MM"
+  notes: string
+}
+
+export interface StudyTask {
+  id: string
+  text: string
+  completed: boolean
+  subjectId?: string
+}
+
+export interface StudyExam {
+  id: string
+  name: string
+  date: string   // "YYYY-MM-DD"
+  color: string
+}
+
+export interface StudyDayRecord {
+  date: string
+  sessions: StudySession[]
+  tasks: StudyTask[]
+}
+
+export interface StudySettings {
+  subjects: StudySubject[]
+  exams: StudyExam[]
+  dailyGoalMinutes: number
+  pomodoroMinutes: number
+  breakMinutes: number
+}

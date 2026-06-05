@@ -84,6 +84,16 @@ export const HEALTH_EMOTIONS = [
 ]
 
 // ── 일과표 ──
+// ── 스터디 ──
+export const DEFAULT_STUDY_SUBJECTS = [
+  { id: 's1', name: '수학',   color: '#3b82f6', emoji: '📐', weeklyGoalMinutes: 300 },
+  { id: 's2', name: '영어',   color: '#22c55e', emoji: '📖', weeklyGoalMinutes: 240 },
+  { id: 's3', name: '국어',   color: '#f97316', emoji: '✏️', weeklyGoalMinutes: 180 },
+  { id: 's4', name: '과학',   color: '#8b5cf6', emoji: '🔬', weeklyGoalMinutes: 180 },
+  { id: 's5', name: '사회',   color: '#eab308', emoji: '🌍', weeklyGoalMinutes: 150 },
+  { id: 's6', name: '기타',   color: '#94a3b8', emoji: '📝', weeklyGoalMinutes: 120 },
+]
+
 export const PLANNER_CATEGORIES = [
   { id: '수면',   label: '수면',   color: '#f9a8d4', emoji: '😴' },  // pink-300
   { id: '업무',   label: '업무',   color: '#fda4af', emoji: '💼' },  // rose-300

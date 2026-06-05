@@ -8,8 +8,11 @@ import type {
   PlannerDayRecord,
   PlannerSettings,
   PlannerCategory,
+  StudyDayRecord,
+  StudySettings,
+  StudySession,
 } from './types'
-import { DEFAULT_BUDGETS, PLANNER_CATEGORIES } from './constants'
+import { DEFAULT_BUDGETS, PLANNER_CATEGORIES, DEFAULT_STUDY_SUBJECTS } from './constants'
 import { pushToCloud } from './sync'
 
 const isBrowser = typeof window !== 'undefined'
@@ -426,6 +429,109 @@ export function syncHealthExercisesToPlanner(date: string, exercises: ExerciseIt
     }
 
     savePlannerRecord({ ...existing, activities: [...kept, ...exerciseActivities] })
+  } catch {
+    // ignore
+  }
+}
+
+// ──────────────────────────────────────────
+// 스터디 Storage
+// ──────────────────────────────────────────
+
+const STUDY_RECORDS_KEY = 'study_records'
+const STUDY_SETTINGS_KEY = 'study_settings'
+
+const defaultStudySettings: StudySettings = {
+  subjects: DEFAULT_STUDY_SUBJECTS,
+  exams: [],
+  dailyGoalMinutes: 120,
+  pomodoroMinutes: 25,
+  breakMinutes: 5,
+}
+
+export function getStudyRecord(date: string): StudyDayRecord {
+  if (!isBrowser) return { date, sessions: [], tasks: [] }
+  try {
+    const all = getAllStudyRecords()
+    return all[date] ?? { date, sessions: [], tasks: [] }
+  } catch {
+    return { date, sessions: [], tasks: [] }
+  }
+}
+
+export function saveStudyRecord(record: StudyDayRecord): void {
+  if (!isBrowser) return
+  try {
+    const all = getAllStudyRecords()
+    all[record.date] = record
+    const value = JSON.stringify(all)
+    localStorage.setItem(STUDY_RECORDS_KEY, value)
+    pushToCloud(STUDY_RECORDS_KEY, value)
+  } catch (e) {
+    console.error('스터디 기록 저장 실패:', e)
+  }
+}
+
+export function getAllStudyRecords(): Record<string, StudyDayRecord> {
+  if (!isBrowser) return {}
+  try {
+    const raw = localStorage.getItem(STUDY_RECORDS_KEY)
+    if (!raw) return {}
+    return JSON.parse(raw) as Record<string, StudyDayRecord>
+  } catch {
+    return {}
+  }
+}
+
+export function getStudySettings(): StudySettings {
+  if (!isBrowser) return { ...defaultStudySettings, subjects: [...DEFAULT_STUDY_SUBJECTS], exams: [] }
+  try {
+    const raw = localStorage.getItem(STUDY_SETTINGS_KEY)
+    if (!raw) return { ...defaultStudySettings, subjects: [...DEFAULT_STUDY_SUBJECTS], exams: [] }
+    const parsed = JSON.parse(raw) as Partial<StudySettings>
+    return {
+      ...defaultStudySettings,
+      ...parsed,
+      subjects: parsed.subjects?.length ? parsed.subjects : [...DEFAULT_STUDY_SUBJECTS],
+      exams: parsed.exams ?? [],
+    }
+  } catch {
+    return { ...defaultStudySettings, subjects: [...DEFAULT_STUDY_SUBJECTS], exams: [] }
+  }
+}
+
+export function saveStudySettings(settings: StudySettings): void {
+  if (!isBrowser) return
+  try {
+    const value = JSON.stringify(settings)
+    localStorage.setItem(STUDY_SETTINGS_KEY, value)
+    pushToCloud(STUDY_SETTINGS_KEY, value)
+  } catch (e) {
+    console.error('스터디 설정 저장 실패:', e)
+  }
+}
+
+export function syncStudyToPlanner(date: string, sessions: StudySession[]): void {
+  if (!isBrowser) return
+  try {
+    const existing = getPlannerRecord(date) ?? { date, activities: [], feedback: null, reflection: null }
+    const kept = existing.activities.filter(a => !a.id.startsWith('study_sync_'))
+    const studyActivities: PlannerDayRecord['activities'] = []
+    const settings = getStudySettings()
+    for (const s of sessions) {
+      if (!s.startTime || !s.endTime) continue
+      const subject = settings.subjects.find(sub => sub.id === s.subjectId)
+      studyActivities.push({
+        id: `study_sync_${s.id}`,
+        name: subject ? `${subject.emoji} ${subject.name}` : '공부',
+        category: '학습',
+        startTime: s.startTime,
+        endTime: s.endTime,
+        color: subject?.color ?? '#c4b5fd',
+        notes: s.notes,
+      })
+    }
+    savePlannerRecord({ ...existing, activities: [...kept, ...studyActivities] })
   } catch {
     // ignore
   }
