@@ -1,10 +1,11 @@
 'use client'
 
-import { useMemo } from 'react'
-import { TrendingDown, TrendingUp, Wallet, AlertTriangle, Lock } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { TrendingDown, TrendingUp, Wallet, AlertTriangle, Lock, ChevronDown, ChevronUp } from 'lucide-react'
 import type { Expense } from '@/lib/types'
 import { getAllBudgetRecords, getBudgetSettings, getEffectiveBudgetSettings } from '@/lib/storage'
 import { BUDGET_CATEGORIES } from '@/lib/constants'
+import { calcLoan, formatMonths, monthsLater } from '@/lib/loanCalc'
 
 interface Props {
   yearMonth: string // "YYYY-MM"
@@ -17,6 +18,87 @@ function Bar({ pct, color }: { pct: number; color: string }) {
         className="h-full rounded-full transition-all duration-500"
         style={{ width: `${Math.min(100, pct)}%`, backgroundColor: color }}
       />
+    </div>
+  )
+}
+
+import type { LoanItem } from '@/lib/types'
+import type { LoanCalcResult } from '@/lib/loanCalc'
+
+function LoanCard({ loan, calc, progressPct }: { loan: LoanItem; calc: LoanCalcResult | null; progressPct: number }) {
+  const [showSchedule, setShowSchedule] = useState(false)
+  return (
+    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+      {/* 헤더 */}
+      <div className="flex justify-between items-start mb-2">
+        <div>
+          <span className="text-sm font-semibold text-slate-800">{loan.name}</span>
+          <span className="ml-2 text-xs text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">{loan.type}</span>
+          {loan.memo && <span className="ml-1 text-xs text-slate-400">{loan.memo}</span>}
+        </div>
+        <span className="text-sm font-bold text-red-600">{loan.monthlyPayment.toLocaleString('ko-KR')}원/월</span>
+      </div>
+
+      {/* 진행바 */}
+      {loan.totalAmount > 0 && (
+        <div className="mb-2">
+          <div className="flex justify-between text-xs text-slate-500 mb-1">
+            <span>상환 {(loan.totalAmount - loan.remainingBalance).toLocaleString('ko-KR')}원</span>
+            <span>잔여 {loan.remainingBalance.toLocaleString('ko-KR')}원</span>
+          </div>
+          <Bar pct={progressPct} color="#22c55e" />
+        </div>
+      )}
+
+      {/* 기본 정보 */}
+      <div className="flex gap-3 text-xs text-slate-400 mb-2">
+        {loan.interestRate > 0 && <span>금리 {loan.interestRate}%</span>}
+        {loan.remainingMonths > 0 && <span>잔여 {formatMonths(loan.remainingMonths)}</span>}
+        {loan.endDate && <span>만기 {loan.endDate}</span>}
+      </div>
+
+      {/* 계산 결과 */}
+      {calc && (
+        <div className="bg-white rounded-lg p-2.5 border border-slate-200 space-y-1.5 text-xs">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+            <div className="flex justify-between"><span className="text-slate-500">이번달 원금</span><span className="font-medium text-blue-600">{calc.firstMonthPrincipal.toLocaleString('ko-KR')}원</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">이번달 이자</span><span className="font-medium text-red-500">{calc.firstMonthInterest.toLocaleString('ko-KR')}원</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">1년 납입 원금</span><span className="font-medium text-blue-600">{calc.yearlyPrincipal.toLocaleString('ko-KR')}원</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">1년 납입 이자</span><span className="font-medium text-red-500">{calc.yearlyInterest.toLocaleString('ko-KR')}원</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">1년 후 잔액</span><span className="font-bold text-slate-800">{calc.balanceAfterYear.toLocaleString('ko-KR')}원</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">완납 예정</span><span className="font-medium text-emerald-600">{monthsLater(calc.payoffMonths)}</span></div>
+          </div>
+          <div className="flex justify-between border-t border-slate-100 pt-1.5">
+            <span className="text-slate-500">총 납입 이자 (전체)</span>
+            <span className="font-bold text-red-500">{calc.totalInterest.toLocaleString('ko-KR')}원</span>
+          </div>
+
+          {/* 12개월 스케줄 토글 */}
+          <button
+            onClick={() => setShowSchedule(v => !v)}
+            className="w-full flex items-center justify-center gap-1 pt-1 text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            {showSchedule ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            <span>{showSchedule ? '스케줄 접기' : '12개월 상환 스케줄 보기'}</span>
+          </button>
+
+          {showSchedule && (
+            <div className="border-t border-slate-100 pt-2 space-y-0.5">
+              <div className="grid grid-cols-4 text-xs text-slate-400 font-semibold pb-1">
+                <span>월</span><span className="text-right">납입액</span><span className="text-right text-blue-500">원금</span><span className="text-right text-red-500">이자</span>
+              </div>
+              {calc.schedule.map(s => (
+                <div key={s.month} className="grid grid-cols-4 text-xs py-0.5 border-b border-slate-50">
+                  <span className="text-slate-500">{s.month}개월</span>
+                  <span className="text-right text-slate-700">{s.payment.toLocaleString('ko-KR')}</span>
+                  <span className="text-right text-blue-500">{s.principal.toLocaleString('ko-KR')}</span>
+                  <span className="text-right text-red-400">{s.interest.toLocaleString('ko-KR')}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -338,33 +420,11 @@ export default function MonthlyReport({ yearMonth }: Props) {
           <h3 className="font-bold text-slate-800 mb-3 text-sm">🏦 대출 현황</h3>
           <div className="space-y-3">
             {data.loans.map(loan => {
+              const calc = calcLoan(loan.remainingBalance, loan.interestRate, loan.remainingMonths)
               const progressPct = loan.totalAmount > 0
                 ? Math.min(100, ((loan.totalAmount - loan.remainingBalance) / loan.totalAmount) * 100)
                 : 0
-              return (
-                <div key={loan.id} className="bg-slate-50 rounded-xl p-3">
-                  <div className="flex justify-between items-start mb-1.5">
-                    <div>
-                      <span className="text-sm font-semibold text-slate-800">{loan.name}</span>
-                      <span className="ml-2 text-xs text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">{loan.type}</span>
-                    </div>
-                    <span className="text-sm font-bold text-red-600">{loan.monthlyPayment.toLocaleString('ko-KR')}원/월</span>
-                  </div>
-                  {loan.totalAmount > 0 && (
-                    <>
-                      <div className="flex justify-between text-xs text-slate-500 mb-1">
-                        <span>상환 {(loan.totalAmount - loan.remainingBalance).toLocaleString('ko-KR')}원</span>
-                        <span>잔여 {loan.remainingBalance.toLocaleString('ko-KR')}원</span>
-                      </div>
-                      <Bar pct={progressPct} color="#22c55e" />
-                    </>
-                  )}
-                  <div className="flex gap-3 mt-1.5 text-xs text-slate-400">
-                    {loan.interestRate > 0 && <span>금리 {loan.interestRate}%</span>}
-                    {loan.endDate && <span>만기 {loan.endDate}</span>}
-                  </div>
-                </div>
-              )
+              return <LoanCard key={loan.id} loan={loan} calc={calc} progressPct={progressPct} />
             })}
             <div className="flex justify-between pt-1 border-t border-slate-100">
               <span className="text-sm font-semibold text-slate-600">총 월 상환액</span>

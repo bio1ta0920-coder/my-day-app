@@ -35,9 +35,10 @@ export interface LoanItem {
   totalAmount: number
   remainingBalance: number
   monthlyPayment: number
-  interestRate: number   // % 단위
-  startDate: string      // YYYY-MM
-  endDate: string        // YYYY-MM
+  interestRate: number    // % 단위
+  remainingMonths: number // 남은 상환 개월 수
+  startDate: string       // YYYY-MM
+  endDate: string         // YYYY-MM
   memo: string
 }
 
