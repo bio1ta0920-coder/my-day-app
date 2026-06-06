@@ -18,10 +18,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'API 키가 필요합니다.' }, { status: 400 })
     }
 
+    // 콤마로 여러 음식 입력 지원
+    const foods = name.split(',').map(s => s.trim()).filter(Boolean)
     const amountStr = amount ? ` (${amount})` : ''
-    const prompt = `다음 음식의 칼로리를 숫자만 답해주세요. 단위 없이 숫자만.
 
-음식: ${name}${amountStr}
+    const prompt = foods.length > 1
+      ? `다음 음식들의 1인분 기준 칼로리를 각각 추정한 뒤, 총합만 숫자 하나로 답해주세요. 단위 없이 숫자만.
+
+음식 목록: ${foods.join(', ')}
+
+각 음식의 일반적인 1인분 기준 칼로리를 합산한 총 숫자만 답하세요 (예: 450)`
+      : `다음 음식의 칼로리를 숫자만 답해주세요. 단위 없이 숫자만.
+
+음식: ${foods[0]}${amountStr}
 
 만약 양이 명시되지 않았다면 일반적인 1인분 기준으로 답해주세요.
 숫자만 답하세요 (예: 350)`

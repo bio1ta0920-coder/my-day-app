@@ -159,12 +159,15 @@ export default function FoodModal({ onClose, onSave, initialData, defaultMealTim
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">음식명 <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+              음식명 <span className="text-red-500">*</span>
+              <span className="ml-1.5 text-xs text-slate-400 font-normal">콤마로 여러 음식 입력 가능</span>
+            </label>
             <input
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="예: 현미밥, 닭가슴살, 사과"
+              placeholder="예: 밥, 된장국, 김치, 계란말이"
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
             />
           </div>
@@ -192,10 +195,15 @@ export default function FoodModal({ onClose, onSave, initialData, defaultMealTim
                 ) : (
                   <Sparkles size={13} />
                 )}
-                자동
+                {name.includes(',') ? '합산 자동' : '자동'}
               </button>
             </div>
             {caloriesError && <p className="text-xs text-red-500 mt-1">{caloriesError}</p>}
+            {name.includes(',') && !caloriesLoading && calories === '' && (
+              <p className="text-xs text-slate-400 mt-1">
+                {name.split(',').filter(s => s.trim()).length}가지 음식의 총 칼로리가 합산됩니다
+              </p>
+            )}
           </div>
 
           <div>
