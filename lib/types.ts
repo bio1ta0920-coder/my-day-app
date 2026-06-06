@@ -40,6 +40,7 @@ export interface LoanItem {
   graceMonths: number               // 거치기간 (개월)
   repaymentDay: number              // 매월 상환일 (1-31)
   graduationRate: number            // 체증률 % (체증식 전용)
+  totalMonths: number               // 대출 총 기간 (체증식 자동계산용)
   totalAmount: number
   remainingBalance: number
   monthlyPayment: number

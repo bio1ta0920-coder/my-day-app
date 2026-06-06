@@ -321,6 +321,158 @@ function calcGraduated(
   }
 }
 
+// ── 체증식 전용 헬퍼 ────────────────────────────────────────
+
+/**
+ * 체증식 대출 초기(1년차) 월 납입액 계산
+ * 현재가치(PV) 방정식으로 PMT₁ 역산
+ */
+export function calcGraduatedInitialPayment(
+  principal: number,
+  annualRate: number,
+  totalMonths: number,
+  graduationRate: number,
+): number {
+  if (principal <= 0 || totalMonths <= 0) return 0
+  const r = annualRate / 100 / 12
+  const g = graduationRate / 100
+
+  // PV = PMT₁ × Σ_{k=0}^{Y-1} (1+g)^k / (1+r)^(12k) × Σ_{m=1}^{min(12,n-12k)} (1+r)^{-m}
+  let pvFactor = 0
+  let yearStart = 0
+  let yearIdx = 0
+  while (yearStart < totalMonths) {
+    const monthsInYear = Math.min(12, totalMonths - yearStart)
+    const discountBase = r > 0 ? Math.pow(1 + r, yearStart) : 1
+    const gradFactor = Math.pow(1 + g, yearIdx)
+    let annuity = 0
+    for (let m = 1; m <= monthsInYear; m++) {
+      annuity += r > 0 ? 1 / Math.pow(1 + r, m) : 1
+    }
+    pvFactor += gradFactor * (annuity / discountBase)
+    yearStart += 12
+    yearIdx++
+  }
+  if (pvFactor <= 0) return 0
+  return Math.round(principal / pvFactor)
+}
+
+/**
+ * 실행일 기준으로 현재 연도차를 구해 현재 납입액 반환
+ * startDate: "YYYY-MM"
+ */
+export function calcGraduatedCurrentPayment(
+  initialPayment: number,
+  startDate: string,
+  graduationRate: number,
+): number {
+  if (!startDate) return initialPayment
+  const [sy, sm] = startDate.split('-').map(Number)
+  const now = new Date()
+  const elapsedMonths = (now.getFullYear() - sy) * 12 + (now.getMonth() + 1 - sm)
+  const elapsedYears = Math.max(0, Math.floor(elapsedMonths / 12))
+  return Math.round(initialPayment * Math.pow(1 + graduationRate / 100, elapsedYears))
+}
+
+/**
+ * 실행일 기준으로 현재까지 상환한 후의 잔여잔액 계산
+ */
+export function calcGraduatedRemainingBalance(
+  principal: number,
+  annualRate: number,
+  totalMonths: number,
+  graduationRate: number,
+  startDate: string,
+): number {
+  if (!startDate || principal <= 0) return principal
+  const r = annualRate / 100 / 12
+  const g = graduationRate / 100
+  const initialPayment = calcGraduatedInitialPayment(principal, annualRate, totalMonths, graduationRate)
+
+  const [sy, sm] = startDate.split('-').map(Number)
+  const now = new Date()
+  const elapsedMonths = Math.max(0, (now.getFullYear() - sy) * 12 + (now.getMonth() + 1 - sm))
+
+  let balance = principal
+  let payment = initialPayment
+  for (let i = 0; i < Math.min(elapsedMonths, totalMonths); i++) {
+    if (i > 0 && i % 12 === 0) payment = Math.round(payment * (1 + g))
+    const interest = Math.round(balance * r)
+    const princ = Math.max(0, payment - interest)
+    balance = Math.max(0, balance - princ)
+  }
+  return Math.round(balance)
+}
+
+/**
+ * 실행일 + 총기간으로 잔여개월 계산
+ */
+export function calcRemainingMonths(startDate: string, totalMonths: number): number {
+  if (!startDate) return totalMonths
+  const [sy, sm] = startDate.split('-').map(Number)
+  const now = new Date()
+  const elapsedMonths = (now.getFullYear() - sy) * 12 + (now.getMonth() + 1 - sm)
+  return Math.max(0, totalMonths - elapsedMonths)
+}
+
+/**
+ * 체증식 연도별 납입액 표 생성
+ */
+export interface GraduatedYearRow {
+  year: number          // 1년차, 2년차...
+  payment: number       // 해당 연도 월 납입액
+  months: number        // 해당 연도 납입 개월 수
+  yearlyTotal: number
+  yearlyPrincipal: number
+  yearlyInterest: number
+  endBalance: number
+}
+
+export function calcGraduatedSchedule(
+  principal: number,
+  annualRate: number,
+  totalMonths: number,
+  graduationRate: number,
+): GraduatedYearRow[] {
+  const r = annualRate / 100 / 12
+  const g = graduationRate / 100
+  const initialPayment = calcGraduatedInitialPayment(principal, annualRate, totalMonths, graduationRate)
+  const rows: GraduatedYearRow[] = []
+
+  let balance = principal
+  let payment = initialPayment
+  let monthsDone = 0
+
+  while (monthsDone < totalMonths && balance > 0) {
+    const year = Math.floor(monthsDone / 12) + 1
+    const monthsInYear = Math.min(12, totalMonths - monthsDone)
+    let yearlyPrincipal = 0; let yearlyInterest = 0
+
+    for (let m = 0; m < monthsInYear; m++) {
+      const interest = Math.round(balance * r)
+      const princ = Math.max(0, payment - interest)
+      balance = Math.max(0, balance - princ)
+      yearlyPrincipal += princ
+      yearlyInterest += interest
+    }
+
+    rows.push({
+      year,
+      payment,
+      months: monthsInYear,
+      yearlyTotal: yearlyPrincipal + yearlyInterest,
+      yearlyPrincipal,
+      yearlyInterest,
+      endBalance: balance,
+    })
+
+    monthsDone += monthsInYear
+    payment = Math.round(payment * (1 + g))
+  }
+
+  return rows
+}
+
 /** 연/월 단위로 표시 */
 export function formatMonths(months: number): string {
   if (months <= 0) return '완납'
