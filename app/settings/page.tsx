@@ -210,7 +210,7 @@ export default function SettingsPage() {
     repaymentType: '원리금균등',
     graceMonths: 0,
     repaymentDay: 25,
-    graduationRate: 0,
+    graduationRate: 5,
     totalMonths: 0,
     totalAmount: 0,
     remainingBalance: 0,
@@ -557,15 +557,23 @@ export default function SettingsPage() {
 
                   {/* 체증식 전용 자동계산 UI */}
                   {loanForm.repaymentType === '체증식' ? (() => {
-                    const canCalc = loanForm.totalAmount > 0 && loanForm.interestRate > 0 && loanForm.totalMonths > 0 && loanForm.startDate
-                    const initPmt = canCalc ? calcGraduatedInitialPayment(loanForm.totalAmount, loanForm.interestRate, loanForm.totalMonths, loanForm.graduationRate) : 0
-                    const curPmt = canCalc ? calcGraduatedCurrentPayment(initPmt, loanForm.startDate, loanForm.graduationRate) : 0
-                    const remBal = canCalc ? calcGraduatedRemainingBalance(loanForm.totalAmount, loanForm.interestRate, loanForm.totalMonths, loanForm.graduationRate, loanForm.startDate) : 0
-                    const remMo = canCalc ? calcRemainingMonths(loanForm.startDate, loanForm.totalMonths) : 0
-                    const gradSchedule = canCalc ? calcGraduatedSchedule(loanForm.totalAmount, loanForm.interestRate, loanForm.totalMonths, loanForm.graduationRate) : []
+                    // 기본 계산 가능 조건 (실행일 없어도 연도별 표는 표시)
+                    const canBasicCalc = loanForm.totalAmount > 0 && loanForm.interestRate > 0 && loanForm.totalMonths > 0
+                    const hasStartDate = !!loanForm.startDate
+                    const initPmt = canBasicCalc ? calcGraduatedInitialPayment(loanForm.totalAmount, loanForm.interestRate, loanForm.totalMonths, loanForm.graduationRate) : 0
+                    const curPmt = (canBasicCalc && hasStartDate) ? calcGraduatedCurrentPayment(initPmt, loanForm.startDate, loanForm.graduationRate) : initPmt
+                    const remBal = (canBasicCalc && hasStartDate) ? calcGraduatedRemainingBalance(loanForm.totalAmount, loanForm.interestRate, loanForm.totalMonths, loanForm.graduationRate, loanForm.startDate) : loanForm.totalAmount
+                    const remMo = (canBasicCalc && hasStartDate) ? calcRemainingMonths(loanForm.startDate, loanForm.totalMonths) : loanForm.totalMonths
+                    const gradSchedule = canBasicCalc ? calcGraduatedSchedule(loanForm.totalAmount, loanForm.interestRate, loanForm.totalMonths, loanForm.graduationRate) : []
                     return (
                       <div className="space-y-3">
-                        {/* 입력 행 1: 총 대출금 + 연이율 */}
+                        {/* 체증식 안내 */}
+                        <div className="bg-blue-50 rounded-lg px-3 py-2 text-xs text-blue-600 leading-relaxed">
+                          <strong>체증식이란?</strong> 매년 납입액이 일정 비율씩 늘어나는 방식이에요.<br/>
+                          주택금융공사(HF) 기준 <strong>체증률 5%</strong>가 일반적이며, 대출 약정서에서 확인할 수 있어요.
+                        </div>
+
+                        {/* 입력 행 1: 총 대출금 + 연이율(고정) */}
                         <div className="grid grid-cols-2 gap-2">
                           <div>
                             <label className="text-xs text-slate-600 block mb-1">총 대출금 (원) *</label>
@@ -574,33 +582,39 @@ export default function SettingsPage() {
                               className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300" />
                           </div>
                           <div>
-                            <label className="text-xs text-slate-600 block mb-1">연이율 (%) *</label>
-                            <input type="number" value={loanForm.interestRate || ''} placeholder="예: 3.5" step="0.01"
+                            <label className="text-xs text-slate-600 block mb-1">연이율 — 고정금리 (%) *</label>
+                            <input type="number" value={loanForm.interestRate || ''} placeholder="예: 3.20" step="0.01"
                               onChange={e => setLoanForm(prev => ({ ...prev, interestRate: Number(e.target.value) || 0 }))}
                               className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300" />
                           </div>
                         </div>
-                        {/* 입력 행 2: 대출 실행일 + 총 기간 */}
+                        {/* 입력 행 2: 대출 총 기간 + 체증률 */}
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="text-xs text-slate-600 block mb-1">대출 실행일 *</label>
-                            <input type="month" value={loanForm.startDate}
-                              onChange={e => setLoanForm(prev => ({ ...prev, startDate: e.target.value }))}
-                              className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300" />
-                          </div>
-                          <div>
                             <label className="text-xs text-slate-600 block mb-1">대출 총 기간 (개월) *</label>
-                            <input type="number" value={loanForm.totalMonths || ''} placeholder="예: 360"
+                            <input type="number" value={loanForm.totalMonths || ''} placeholder="예: 360 (30년)"
                               onChange={e => setLoanForm(prev => ({ ...prev, totalMonths: Number(e.target.value) || 0 }))}
                               className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300" />
                           </div>
+                          <div>
+                            <label className="text-xs text-slate-600 block mb-1">
+                              연 체증률 (%)
+                              <span className="ml-1 text-pink-400 font-normal">기본 5%</span>
+                            </label>
+                            <input type="number" value={loanForm.graduationRate ?? 5} placeholder="5" step="0.01"
+                              onChange={e => setLoanForm(prev => ({ ...prev, graduationRate: Number(e.target.value) || 0 }))}
+                              className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300" />
+                          </div>
                         </div>
-                        {/* 입력 행 3: 체증률 + 매월 상환일 */}
+                        {/* 입력 행 3: 대출 실행일 + 매월 상환일 */}
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="text-xs text-slate-600 block mb-1">연 체증률 (%)</label>
-                            <input type="number" value={loanForm.graduationRate || ''} placeholder="예: 5.00" step="0.01"
-                              onChange={e => setLoanForm(prev => ({ ...prev, graduationRate: Number(e.target.value) || 0 }))}
+                            <label className="text-xs text-slate-600 block mb-1">
+                              대출 실행일
+                              <span className="ml-1 text-slate-400 font-normal">(입력 시 현재 납입액 계산)</span>
+                            </label>
+                            <input type="month" value={loanForm.startDate}
+                              onChange={e => setLoanForm(prev => ({ ...prev, startDate: e.target.value }))}
                               className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300" />
                           </div>
                           <div>
@@ -614,10 +628,13 @@ export default function SettingsPage() {
                           </div>
                         </div>
 
-                        {/* 자동계산 결과 */}
-                        {canCalc && initPmt > 0 && (
+                        {/* 자동계산 결과 — 기본 3개 필드만 있으면 표시 */}
+                        {canBasicCalc && initPmt > 0 && (
                           <div className="bg-white rounded-lg p-3 border border-pink-200 space-y-2 fade-in">
-                            <p className="text-xs font-semibold text-pink-600">📊 체증식 자동계산 결과</p>
+                            <p className="text-xs font-semibold text-pink-600">
+                              📊 체증식 자동계산 결과
+                              {loanForm.graduationRate > 0 && <span className="ml-1 text-pink-400 font-normal">(체증률 {loanForm.graduationRate}%)</span>}
+                            </p>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
                               <div className="flex justify-between">
                                 <span className="text-slate-500">1년차 월 납입액</span>
@@ -632,30 +649,35 @@ export default function SettingsPage() {
                                 <span className="font-medium text-slate-800">{remBal.toLocaleString('ko-KR')}원</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-slate-500">잔여 개월</span>
+                                <span className="text-slate-500">잔여 기간</span>
                                 <span className="font-medium text-slate-800">{formatMonths(remMo)}</span>
                               </div>
                             </div>
+                            {!hasStartDate && (
+                              <p className="text-xs text-slate-400 bg-slate-50 rounded px-2 py-1">
+                                💡 대출 실행일을 입력하면 현재 납입액과 잔여 잔액이 정확히 계산됩니다
+                              </p>
+                            )}
 
                             {/* 연도별 납입액 표 */}
                             {gradSchedule.length > 0 && (
                               <div className="border-t border-pink-100 pt-2">
-                                <p className="text-xs font-semibold text-slate-600 mb-1.5">📅 연도별 납입액 일람</p>
-                                <div className="overflow-x-auto">
+                                <p className="text-xs font-semibold text-slate-600 mb-1.5">📅 연도별 월 납입액</p>
+                                <div className="max-h-48 overflow-y-auto">
                                   <table className="w-full text-xs">
-                                    <thead>
+                                    <thead className="sticky top-0 bg-white">
                                       <tr className="text-slate-400 border-b border-slate-100">
-                                        <th className="text-left pb-1 font-semibold">연차</th>
+                                        <th className="text-left pb-1 font-semibold pr-1">연차</th>
                                         <th className="text-right pb-1 font-semibold">월 납입액</th>
-                                        <th className="text-right pb-1 font-semibold text-blue-500">원금</th>
-                                        <th className="text-right pb-1 font-semibold text-red-400">이자</th>
+                                        <th className="text-right pb-1 font-semibold text-blue-500">연간원금</th>
+                                        <th className="text-right pb-1 font-semibold text-red-400">연간이자</th>
                                         <th className="text-right pb-1 font-semibold">잔액</th>
                                       </tr>
                                     </thead>
                                     <tbody>
                                       {gradSchedule.map(row => (
-                                        <tr key={row.year} className="border-b border-slate-50">
-                                          <td className="py-1 text-slate-600">{row.year}년차</td>
+                                        <tr key={row.year} className={`border-b border-slate-50 ${hasStartDate && row.year === Math.floor(calcRemainingMonths(loanForm.startDate, loanForm.totalMonths) > loanForm.totalMonths - 12 ? 1 : (loanForm.totalMonths - calcRemainingMonths(loanForm.startDate, loanForm.totalMonths)) / 12) + 1 ? 'bg-pink-50' : ''}`}>
+                                          <td className="py-1 text-slate-600 pr-1">{row.year}년차</td>
                                           <td className="py-1 text-right font-medium text-slate-800">{row.payment.toLocaleString('ko-KR')}</td>
                                           <td className="py-1 text-right text-blue-500">{row.yearlyPrincipal.toLocaleString('ko-KR')}</td>
                                           <td className="py-1 text-right text-red-400">{row.yearlyInterest.toLocaleString('ko-KR')}</td>
@@ -671,9 +693,13 @@ export default function SettingsPage() {
                             <button
                               type="button"
                               onClick={() => {
-                                const endDateObj = new Date(loanForm.startDate + '-01')
-                                endDateObj.setMonth(endDateObj.getMonth() + loanForm.totalMonths)
-                                const endDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}`
+                                const endDate = loanForm.startDate
+                                  ? (() => {
+                                    const d = new Date(loanForm.startDate + '-01')
+                                    d.setMonth(d.getMonth() + loanForm.totalMonths)
+                                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+                                  })()
+                                  : loanForm.endDate
                                 setLoanForm(prev => ({
                                   ...prev,
                                   monthlyPayment: curPmt,
@@ -684,13 +710,13 @@ export default function SettingsPage() {
                               }}
                               className="w-full py-1.5 bg-pink-100 text-pink-700 rounded-lg text-xs font-semibold hover:bg-pink-200 transition-colors"
                             >
-                              계산 결과 적용 (현재 납입액 {curPmt.toLocaleString('ko-KR')}원, 잔액 {remBal.toLocaleString('ko-KR')}원)
+                              계산 결과 적용 — 현재 납입액 {curPmt.toLocaleString('ko-KR')}원 / 잔여 잔액 {remBal.toLocaleString('ko-KR')}원
                             </button>
                           </div>
                         )}
-                        {!canCalc && (
+                        {!canBasicCalc && (
                           <p className="text-xs text-slate-400 bg-slate-50 rounded-lg px-3 py-2">
-                            * 표시 항목을 모두 입력하면 월 납입액이 자동 계산됩니다
+                            총 대출금 · 연이율 · 대출 기간을 입력하면 자동 계산됩니다
                           </p>
                         )}
                       </div>
