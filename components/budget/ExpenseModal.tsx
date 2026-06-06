@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { X, ChevronDown, ChevronUp } from 'lucide-react'
-import type { Expense } from '@/lib/types'
+import type { Expense, LoanItem } from '@/lib/types'
 import { BUDGET_CATEGORIES, PAYMENT_METHODS, CARDS } from '@/lib/constants'
+import { calcLoan } from '@/lib/loanCalc'
 
 interface Props {
   expense: Expense | null
   onSave: (expense: Expense) => void
   onClose: () => void
+  loans?: LoanItem[]
 }
 
 function generateId(): string {
@@ -30,6 +32,9 @@ const emptyExpense = (): Expense => ({
   isDate: false,
   reason: '',
   notes: '',
+  loanId: undefined,
+  loanPrincipal: undefined,
+  loanInterest: undefined,
 })
 
 const purchaseTypes: Array<{ key: 'planned' | 'impulse' | 'essential'; label: string; color: string; bg: string }> = [
@@ -38,10 +43,26 @@ const purchaseTypes: Array<{ key: 'planned' | 'impulse' | 'essential'; label: st
   { key: 'essential', label: '필수지출', color: '#2563eb', bg: '#eff6ff' },
 ]
 
-export default function ExpenseModal({ expense, onSave, onClose }: Props) {
+export default function ExpenseModal({ expense, onSave, onClose, loans = [] }: Props) {
   const [form, setForm] = useState<Expense>(expense ?? emptyExpense())
   const [showExtra, setShowExtra] = useState(false)
   const [amountStr, setAmountStr] = useState(expense?.amount ? String(expense.amount) : '')
+  const [showLoanLink, setShowLoanLink] = useState(!!expense?.loanId)
+  const [loanPrincipalStr, setLoanPrincipalStr] = useState(expense?.loanPrincipal ? String(expense.loanPrincipal) : '')
+  const [loanInterestStr, setLoanInterestStr] = useState(expense?.loanInterest ? String(expense.loanInterest) : '')
+
+  const selectedLoan = loans.find(l => l.id === form.loanId)
+
+  function applyLoanCalc(loan: LoanItem) {
+    const calc = calcLoan(loan.remainingBalance, loan.interestRate, loan.remainingMonths,
+      loan.repaymentType, loan.graceMonths, loan.graduationRate, loan.monthlyPayment)
+    if (calc) {
+      setLoanPrincipalStr(String(calc.firstMonthPrincipal))
+      setLoanInterestStr(String(calc.firstMonthInterest))
+      setAmountStr(String(calc.monthlyPayment))
+      setForm(prev => ({ ...prev, name: `${loan.name} 상환`, category: '대출상환', isFixed: true, purchaseType: 'essential' }))
+    }
+  }
 
   useEffect(() => {
     document.body.classList.add('modal-open')
@@ -55,7 +76,13 @@ export default function ExpenseModal({ expense, onSave, onClose }: Props) {
   const handleSave = () => {
     if (!amountStr || parseInt(amountStr) <= 0) { alert('금액을 입력해주세요.'); return }
     if (!form.name.trim()) { alert('항목명을 입력해주세요.'); return }
-    onSave({ ...form, amount: parseInt(amountStr) || 0 })
+    onSave({
+      ...form,
+      amount: parseInt(amountStr) || 0,
+      loanId: showLoanLink ? form.loanId : undefined,
+      loanPrincipal: showLoanLink && loanPrincipalStr ? parseInt(loanPrincipalStr) : undefined,
+      loanInterest: showLoanLink && loanInterestStr ? parseInt(loanInterestStr) : undefined,
+    })
   }
 
   return (
@@ -283,6 +310,75 @@ export default function ExpenseModal({ expense, onSave, onClose }: Props) {
               </div>
             )}
           </div>
+
+          {/* 대출 상환 연동 */}
+          {loans.length > 0 && (
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowLoanLink(v => !v)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-2 transition-all ${
+                  showLoanLink ? 'border-red-400 bg-red-50' : 'border-slate-200 bg-slate-50 hover:border-slate-300'
+                }`}
+              >
+                <span className="text-2xl">🏦</span>
+                <div className="flex-1 text-left">
+                  <p className={`text-sm font-semibold ${showLoanLink ? 'text-red-700' : 'text-slate-700'}`}>대출 상환 연동</p>
+                  <p className="text-xs text-slate-400">연동하면 대출 잔액이 자동으로 차감됩니다</p>
+                </div>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${showLoanLink ? 'border-red-500 bg-red-500' : 'border-slate-300'}`}>
+                  {showLoanLink && <span className="text-white text-xs font-bold">✓</span>}
+                </div>
+              </button>
+
+              {showLoanLink && (
+                <div className="mt-2 bg-red-50 rounded-xl p-3 border border-red-100 space-y-2.5 fade-in">
+                  <div>
+                    <label className="text-xs text-slate-600 block mb-1">연동할 대출</label>
+                    <select
+                      value={form.loanId ?? ''}
+                      onChange={e => {
+                        const loan = loans.find(l => l.id === e.target.value)
+                        set('loanId', e.target.value)
+                        if (loan) applyLoanCalc(loan)
+                      }}
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300"
+                    >
+                      <option value="">대출 선택...</option>
+                      {loans.map(l => (
+                        <option key={l.id} value={l.id}>
+                          {l.name} (잔여 {l.remainingBalance.toLocaleString('ko-KR')}원)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {selectedLoan && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-slate-600 block mb-1">원금 (원)</label>
+                        <input type="number" value={loanPrincipalStr}
+                          onChange={e => setLoanPrincipalStr(e.target.value)}
+                          placeholder="0"
+                          className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-600 block mb-1">이자 (원)</label>
+                        <input type="number" value={loanInterestStr}
+                          onChange={e => setLoanInterestStr(e.target.value)}
+                          placeholder="0"
+                          className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-red-300" />
+                      </div>
+                    </div>
+                  )}
+                  {selectedLoan && (
+                    <p className="text-xs text-red-500">
+                      ✓ 저장 시 {selectedLoan.name} 잔액에서 원금 차감
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <button
             onClick={handleSave}

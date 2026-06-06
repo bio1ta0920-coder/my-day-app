@@ -15,6 +15,9 @@ export interface Expense {
   time?: string
   reason: string
   notes: string
+  loanId?: string        // 연동된 대출 ID
+  loanPrincipal?: number // 원금 상환분
+  loanInterest?: number  // 이자 상환분
 }
 
 export interface BudgetDayRecord {
@@ -27,16 +30,21 @@ export interface BudgetDayRecord {
 }
 
 export type LoanType = '주택담보대출' | '전세대출' | '자동차할부' | '신용대출' | '학자금대출' | '기타'
+export type LoanRepaymentType = '원리금균등' | '원금균등' | '체증식' | '만기일시' | '거치식'
 
 export interface LoanItem {
   id: string
   name: string
   type: LoanType
+  repaymentType: LoanRepaymentType  // 상환 방식
+  graceMonths: number               // 거치기간 (개월)
+  repaymentDay: number              // 매월 상환일 (1-31)
+  graduationRate: number            // 체증률 % (체증식 전용)
   totalAmount: number
   remainingBalance: number
   monthlyPayment: number
-  interestRate: number    // % 단위
-  remainingMonths: number // 남은 상환 개월 수
+  interestRate: number
+  remainingMonths: number
   startDate: string       // YYYY-MM
   endDate: string         // YYYY-MM
   memo: string

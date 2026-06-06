@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Eye, EyeOff, Cloud, CloudOff, RefreshCw } from 'lucide-react'
-import type { BudgetSettings, HealthSettings, FavoriteFood, FavoriteExercise, LoanItem, LoanType } from '@/lib/types'
+import type { BudgetSettings, HealthSettings, FavoriteFood, FavoriteExercise, LoanItem, LoanType, LoanRepaymentType } from '@/lib/types'
 import { calcLoan, formatMonths, monthsLater } from '@/lib/loanCalc'
 import {
   getApiKey,
@@ -203,6 +203,10 @@ export default function SettingsPage() {
     id: Date.now().toString(),
     name: '',
     type: '신용대출',
+    repaymentType: '원리금균등',
+    graceMonths: 0,
+    repaymentDay: 25,
+    graduationRate: 0,
     totalAmount: 0,
     remainingBalance: 0,
     monthlyPayment: 0,
@@ -479,6 +483,10 @@ export default function SettingsPage() {
                   <span>월 상환 <strong className="text-slate-700">{loan.monthlyPayment.toLocaleString('ko-KR')}원</strong></span>
                   <span>잔여 <strong className="text-slate-700">{loan.remainingBalance.toLocaleString('ko-KR')}원</strong></span>
                   {loan.interestRate > 0 && <span>금리 <strong className="text-slate-700">{loan.interestRate}%</strong></span>}
+                  {(loan.repaymentType && loan.repaymentType !== '원리금균등') && (
+                    <span className="bg-pink-50 text-pink-600 px-1.5 py-0.5 rounded">{loan.repaymentType}</span>
+                  )}
+                  {loan.repaymentDay > 0 && <span>매월 <strong className="text-slate-700">{loan.repaymentDay}일</strong> 상환</span>}
                   {loan.endDate && <span>만기 <strong className="text-slate-700">{loan.endDate}</strong></span>}
                 </div>
                 {loan.memo && <p className="text-xs text-slate-400 mt-1">{loan.memo}</p>}
@@ -487,7 +495,10 @@ export default function SettingsPage() {
 
             {/* 추가/수정 폼 */}
             {showLoanForm && (() => {
-              const calc = calcLoan(loanForm.remainingBalance, loanForm.interestRate, loanForm.remainingMonths)
+              const calc = calcLoan(
+                loanForm.remainingBalance, loanForm.interestRate, loanForm.remainingMonths,
+                loanForm.repaymentType, loanForm.graceMonths, loanForm.graduationRate, loanForm.monthlyPayment
+              )
               return (
                 <div className="bg-pink-50 rounded-xl p-3 border border-pink-100 space-y-3 fade-in">
                   <p className="text-sm font-semibold text-pink-700">{editingLoanId ? '대출 수정' : '대출 추가'}</p>
@@ -510,6 +521,59 @@ export default function SettingsPage() {
                       </select>
                     </div>
                   </div>
+
+                  {/* 상환 방식 */}
+                  <div>
+                    <label className="text-xs text-slate-600 block mb-1">상환 방식</label>
+                    <div className="grid grid-cols-5 gap-1">
+                      {(['원리금균등','원금균등','거치식','만기일시','체증식'] as LoanRepaymentType[]).map(rt => (
+                        <button key={rt} type="button"
+                          onClick={() => setLoan('repaymentType', rt)}
+                          className={`py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                            loanForm.repaymentType === rt
+                              ? 'bg-pink-400 text-white border-pink-400'
+                              : 'bg-white text-slate-600 border-slate-200 hover:border-pink-200'
+                          }`}
+                        >{rt}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 거치기간 (거치식 전용) */}
+                  {loanForm.repaymentType === '거치식' && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-slate-600 block mb-1">남은 거치기간 (개월)</label>
+                        <input type="number" value={loanForm.graceMonths || ''} placeholder="0"
+                          onChange={e => setLoan('graceMonths', Number(e.target.value) || 0)}
+                          className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300" />
+                        <p className="text-xs text-slate-400 mt-0.5">0이면 이미 원금상환 중</p>
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-600 block mb-1">총 거치기간 참고</label>
+                        <p className="text-xs text-slate-500 mt-2">전체 개월에 거치기간이 포함된 수로 입력</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 체증률 (체증식 전용) */}
+                  {loanForm.repaymentType === '체증식' && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-slate-600 block mb-1">연 체증률 (%)</label>
+                        <input type="number" value={loanForm.graduationRate || ''} placeholder="예: 5"
+                          step="0.1"
+                          onChange={e => setLoan('graduationRate', Number(e.target.value) || 0)}
+                          className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-600 block mb-1">현재 월 납입액 (원)</label>
+                        <input type="number" value={loanForm.monthlyPayment || ''} placeholder="직접 입력"
+                          onChange={e => setLoan('monthlyPayment', Number(e.target.value) || 0)}
+                          className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300" />
+                      </div>
+                    </div>
+                  )}
 
                   {/* 잔여잔액 + 금리 + 남은개월 → 자동계산 */}
                   <div className="grid grid-cols-3 gap-2">
@@ -594,19 +658,30 @@ export default function SettingsPage() {
                     </div>
                   )}
 
-                  {/* 총 대출금 + 월납입(직접입력) */}
-                  <div className="grid grid-cols-2 gap-2">
+                  {/* 총 대출금 + 월납입(직접입력) + 상환일 */}
+                  <div className="grid grid-cols-3 gap-2">
                     <div>
                       <label className="text-xs text-slate-600 block mb-1">총 대출금 (원)</label>
                       <input type="number" value={loanForm.totalAmount || ''} placeholder="0"
                         onChange={e => setLoan('totalAmount', Number(e.target.value) || 0)}
                         className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300" />
                     </div>
+                    {loanForm.repaymentType !== '체증식' && (
+                      <div>
+                        <label className="text-xs text-slate-600 block mb-1">월 납입액 (원)</label>
+                        <input type="number" value={loanForm.monthlyPayment || ''} placeholder="자동계산 후 적용"
+                          onChange={e => setLoan('monthlyPayment', Number(e.target.value) || 0)}
+                          className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300" />
+                      </div>
+                    )}
                     <div>
-                      <label className="text-xs text-slate-600 block mb-1">월 납입액 (원)</label>
-                      <input type="number" value={loanForm.monthlyPayment || ''} placeholder="자동계산 후 적용"
-                        onChange={e => setLoan('monthlyPayment', Number(e.target.value) || 0)}
-                        className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300" />
+                      <label className="text-xs text-slate-600 block mb-1">매월 상환일</label>
+                      <div className="flex items-center gap-1">
+                        <input type="number" value={loanForm.repaymentDay || ''} placeholder="25" min={1} max={31}
+                          onChange={e => setLoan('repaymentDay', Number(e.target.value) || 25)}
+                          className="w-full px-2.5 py-2 rounded-lg border border-slate-200 text-sm bg-white focus:outline-none focus:border-pink-300" />
+                        <span className="text-xs text-slate-500 whitespace-nowrap">일</span>
+                      </div>
                     </div>
                   </div>
 

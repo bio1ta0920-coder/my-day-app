@@ -420,7 +420,7 @@ export default function MonthlyReport({ yearMonth }: Props) {
           <h3 className="font-bold text-slate-800 mb-3 text-sm">🏦 대출 현황</h3>
           <div className="space-y-3">
             {data.loans.map(loan => {
-              const calc = calcLoan(loan.remainingBalance, loan.interestRate, loan.remainingMonths)
+              const calc = calcLoan(loan.remainingBalance, loan.interestRate, loan.remainingMonths, loan.repaymentType, loan.graceMonths, loan.graduationRate, loan.monthlyPayment)
               const progressPct = loan.totalAmount > 0
                 ? Math.min(100, ((loan.totalAmount - loan.remainingBalance) / loan.totalAmount) * 100)
                 : 0

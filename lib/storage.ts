@@ -35,6 +35,13 @@ const defaultBudgetSettings: BudgetSettings = {
   loans: [],
 }
 
+const defaultLoan = {
+  repaymentType: '원리금균등' as const,
+  graceMonths: 0,
+  repaymentDay: 25,
+  graduationRate: 0,
+}
+
 export function getBudgetRecord(date: string): BudgetDayRecord | null {
   if (!isBrowser) return null
   try {
@@ -98,6 +105,25 @@ export function saveBudgetSettings(settings: BudgetSettings): void {
     pushToCloud(BUDGET_SETTINGS_KEY, value)
   } catch (e) {
     console.error('가계부 설정 저장 실패:', e)
+  }
+}
+
+/** 대출 잔액 업데이트 (원금 상환 시 차감, delta < 0 = 차감) */
+export function updateLoanBalance(loanId: string, delta: number): void {
+  if (!isBrowser) return
+  try {
+    const settings = getBudgetSettings()
+    const updated = {
+      ...settings,
+      loans: settings.loans.map(l =>
+        l.id === loanId
+          ? { ...l, remainingBalance: Math.max(0, l.remainingBalance + delta) }
+          : l
+      ),
+    }
+    saveBudgetSettings(updated)
+  } catch (e) {
+    console.error('대출 잔액 업데이트 실패:', e)
   }
 }
 

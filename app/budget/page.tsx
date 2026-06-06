@@ -13,6 +13,7 @@ import {
   getEffectiveBudgetSettings,
   getAllBudgetRecords,
   addDays,
+  updateLoanBalance,
 } from '@/lib/storage'
 import { BUDGET_EMOTIONS } from '@/lib/constants'
 import ExpenseModal from '@/components/budget/ExpenseModal'
@@ -108,7 +109,17 @@ export default function BudgetPage() {
 
   const handleSaveExpense = (expense: Expense) => {
     updateRecord(prev => {
-      const isEdit = prev.expenses.some(e => e.id === expense.id)
+      const existing = prev.expenses.find(e => e.id === expense.id)
+      const isEdit = !!existing
+
+      // 대출 잔액 업데이트
+      if (expense.loanId) {
+        const newPrincipal = expense.loanPrincipal ?? 0
+        const oldPrincipal = isEdit ? (existing?.loanPrincipal ?? 0) : 0
+        const delta = -(newPrincipal - oldPrincipal) // 차감: 음수
+        if (delta !== 0) updateLoanBalance(expense.loanId, delta)
+      }
+
       const expenses = isEdit
         ? prev.expenses.map(e => (e.id === expense.id ? expense : e))
         : [...prev.expenses, expense]
@@ -120,7 +131,13 @@ export default function BudgetPage() {
 
   const handleDeleteExpense = (id: string) => {
     if (!confirm('이 지출 항목을 삭제할까요?')) return
-    updateRecord(prev => ({ ...prev, expenses: prev.expenses.filter(e => e.id !== id) }))
+    updateRecord(prev => {
+      const expense = prev.expenses.find(e => e.id === id)
+      if (expense?.loanId && expense.loanPrincipal) {
+        updateLoanBalance(expense.loanId, expense.loanPrincipal)
+      }
+      return { ...prev, expenses: prev.expenses.filter(e => e.id !== id) }
+    })
   }
 
   const handleEditExpense = (expense: Expense) => {
@@ -505,6 +522,7 @@ export default function BudgetPage() {
           expense={editingExpense}
           onSave={handleSaveExpense}
           onClose={() => { setShowAddModal(false); setEditingExpense(null) }}
+          loans={getBudgetSettings().loans ?? []}
         />
       )}
     </div>
