@@ -133,6 +133,9 @@ export default function HomePage() {
       setDiaryText(savedDiary ?? '')
     }
 
+    // 할 일: 해당 날짜 기준으로 갱신
+    setTodos(getTodosForDate(dateStr))
+
     setFeedbackError('')
   }, [])
 
@@ -223,7 +226,8 @@ export default function HomePage() {
     const all = getTodos()
     const updated = all.map(t => t.id === id ? { ...t, completed: !t.completed } : t)
     saveTodos(updated)
-    setTodos(getTodosForDate(today))
+    // 필터 재로딩 없이 현재 목록에서 in-place 업데이트 (체크해도 항목 유지)
+    setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
   }
 
   function deleteTodo(id: string) {
@@ -311,7 +315,7 @@ export default function HomePage() {
               <p className="px-4 py-3 text-sm text-slate-400">오늘 할 일을 추가해보세요</p>
             )}
             {todos.map(todo => (
-              <div key={todo.id} className="px-4 py-2.5 flex items-center gap-3">
+              <div key={todo.id} className={`px-4 py-2.5 flex items-center gap-3 transition-colors ${todo.completed ? 'bg-slate-50/60' : ''}`}>
                 <button
                   onClick={() => toggleTodo(todo.id)}
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
@@ -320,7 +324,7 @@ export default function HomePage() {
                 >
                   {todo.completed && <Check size={10} color="white" strokeWidth={3} />}
                 </button>
-                <span className={`flex-1 text-sm ${todo.completed ? 'line-through text-slate-400' : 'text-slate-700'}`}>
+                <span className={`flex-1 text-sm transition-all ${todo.completed ? 'line-through text-slate-300' : 'text-slate-700'}`}>
                   {todo.createdDate < today && !todo.completed && (
                     <span className="text-xs text-amber-400 mr-1">이월</span>
                   )}
