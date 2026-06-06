@@ -27,6 +27,16 @@ import type { LoanCalcResult } from '@/lib/loanCalc'
 
 function LoanCard({ loan, calc, progressPct }: { loan: LoanItem; calc: LoanCalcResult | null; progressPct: number }) {
   const [showSchedule, setShowSchedule] = useState(false)
+
+  // 거치식 파생 계산
+  const isGraceActive = loan.repaymentType === '거치식' && (loan.graceMonths ?? 0) > 0
+  const r = loan.interestRate / 100 / 12
+  const graceInterest = isGraceActive && r > 0 ? Math.round(loan.remainingBalance * r) : 0
+  const amortMonths = isGraceActive ? loan.remainingMonths - loan.graceMonths : 0
+  const amortPmt = isGraceActive && amortMonths > 0 && r > 0
+    ? Math.round(loan.remainingBalance * r * Math.pow(1+r, amortMonths) / (Math.pow(1+r, amortMonths) - 1))
+    : 0
+
   return (
     <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
       {/* 헤더 */}
@@ -34,10 +44,38 @@ function LoanCard({ loan, calc, progressPct }: { loan: LoanItem; calc: LoanCalcR
         <div>
           <span className="text-sm font-semibold text-slate-800">{loan.name}</span>
           <span className="ml-2 text-xs text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">{loan.type}</span>
+          {isGraceActive && <span className="ml-1 text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">거치중</span>}
           {loan.memo && <span className="ml-1 text-xs text-slate-400">{loan.memo}</span>}
         </div>
-        <span className="text-sm font-bold text-red-600">{loan.monthlyPayment.toLocaleString('ko-KR')}원/월</span>
+        {isGraceActive ? (
+          <div className="text-right">
+            <div className="text-sm font-bold text-red-500">{graceInterest.toLocaleString('ko-KR')}원/월</div>
+            <div className="text-xs text-slate-400">이자만 납부중</div>
+          </div>
+        ) : (
+          <span className="text-sm font-bold text-red-600">{loan.monthlyPayment.toLocaleString('ko-KR')}원/월</span>
+        )}
       </div>
+
+      {/* 거치식 전용: 원금상환 개시 정보 */}
+      {isGraceActive && (
+        <div className="mb-2 bg-orange-50 rounded-lg px-3 py-2 text-xs space-y-1">
+          <div className="flex justify-between">
+            <span className="text-slate-500">거치기간 남은 개월</span>
+            <span className="font-semibold text-orange-600">{loan.graceMonths}개월</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-500">원금상환 개시 예정</span>
+            <span className="font-bold text-blue-600">{monthsLater(loan.graceMonths)}</span>
+          </div>
+          {amortPmt > 0 && (
+            <div className="flex justify-between border-t border-orange-100 pt-1">
+              <span className="text-slate-500">개시 후 월 납입액</span>
+              <span className="font-bold text-blue-700">{amortPmt.toLocaleString('ko-KR')}원/월</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 진행바 */}
       {loan.totalAmount > 0 && (

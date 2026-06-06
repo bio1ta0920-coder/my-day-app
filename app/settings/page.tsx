@@ -485,7 +485,23 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
-                  <span>월 상환 <strong className="text-slate-700">{loan.monthlyPayment.toLocaleString('ko-KR')}원</strong></span>
+                  {loan.repaymentType === '거치식' && loan.graceMonths > 0 ? (() => {
+                    const r = loan.interestRate / 100 / 12
+                    const monthlyInterest = r > 0 ? Math.round(loan.remainingBalance * r) : 0
+                    const amortMonths = loan.remainingMonths - loan.graceMonths
+                    const amortPmt = amortMonths > 0 && r > 0
+                      ? Math.round(loan.remainingBalance * r * Math.pow(1+r, amortMonths) / (Math.pow(1+r, amortMonths) - 1))
+                      : 0
+                    return (
+                      <>
+                        <span>이자만 <strong className="text-red-500">{monthlyInterest.toLocaleString('ko-KR')}원/월</strong> <span className="bg-orange-100 text-orange-600 px-1 rounded">거치중</span></span>
+                        <span>원금상환 개시 <strong className="text-blue-600">{monthsLater(loan.graceMonths)}</strong></span>
+                        {amortPmt > 0 && <span>개시 후 <strong className="text-slate-700">{amortPmt.toLocaleString('ko-KR')}원/월</strong></span>}
+                      </>
+                    )
+                  })() : (
+                    <span>월 상환 <strong className="text-slate-700">{loan.monthlyPayment.toLocaleString('ko-KR')}원</strong></span>
+                  )}
                   <span>잔여 <strong className="text-slate-700">{loan.remainingBalance.toLocaleString('ko-KR')}원</strong></span>
                   {loan.interestRate > 0 && <span>금리 <strong className="text-slate-700">{loan.interestRate}%</strong></span>}
                   {(loan.repaymentType && loan.repaymentType !== '원리금균등') && (
@@ -715,9 +731,12 @@ export default function SettingsPage() {
                           </div>
                         )}
                         {!canBasicCalc && (
-                          <p className="text-xs text-slate-400 bg-slate-50 rounded-lg px-3 py-2">
-                            총 대출금 · 연이율 · 대출 기간을 입력하면 자동 계산됩니다
-                          </p>
+                          <div className="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2 space-y-0.5">
+                            <p className="font-semibold text-slate-600">다음 항목을 입력하면 자동 계산됩니다:</p>
+                            {!loanForm.totalAmount && <p>• 총 대출금</p>}
+                            {!loanForm.interestRate && <p>• 연이율</p>}
+                            {!loanForm.totalMonths && <p>• 대출 총 기간 (예: 30년 = 360개월)</p>}
+                          </div>
                         )}
                       </div>
                     )
@@ -751,61 +770,113 @@ export default function SettingsPage() {
                       </div>
 
                       {/* 자동계산 결과 */}
-                      {calc && (
-                        <div className="bg-white rounded-lg p-3 border border-pink-200 space-y-2">
-                          <p className="text-xs font-semibold text-pink-600">📊 자동 계산 결과</p>
-                          <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
-                            <div className="flex justify-between">
-                              <span className="text-slate-500">월 납입액</span>
-                              <span className="font-bold text-slate-800">{calc.monthlyPayment.toLocaleString('ko-KR')}원</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-500">└ 첫달 원금</span>
-                              <span className="font-medium text-blue-600">{calc.firstMonthPrincipal.toLocaleString('ko-KR')}원</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-500">└ 첫달 이자</span>
-                              <span className="font-medium text-red-500">{calc.firstMonthInterest.toLocaleString('ko-KR')}원</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-500">완납 예정</span>
-                              <span className="font-medium text-slate-700">{monthsLater(calc.payoffMonths)}</span>
-                            </div>
+                      {calc && (() => {
+                        const isGraceActive = loanForm.repaymentType === '거치식' && loanForm.graceMonths > 0
+                        const r2 = loanForm.interestRate / 100 / 12
+                        const amortMonths2 = loanForm.remainingMonths - loanForm.graceMonths
+                        const amortPmt2 = isGraceActive && amortMonths2 > 0 && r2 > 0
+                          ? Math.round(loanForm.remainingBalance * r2 * Math.pow(1+r2, amortMonths2) / (Math.pow(1+r2, amortMonths2) - 1))
+                          : 0
+                        const graceInterest = isGraceActive ? Math.round(loanForm.remainingBalance * r2) : 0
+                        return (
+                          <div className="bg-white rounded-lg p-3 border border-pink-200 space-y-2">
+                            <p className="text-xs font-semibold text-pink-600">
+                              📊 자동 계산 결과
+                              {isGraceActive && <span className="ml-1 bg-orange-100 text-orange-600 px-1.5 rounded font-normal">거치중</span>}
+                            </p>
+
+                            {isGraceActive ? (
+                              // 거치식 전용 표시
+                              <div className="space-y-2 text-xs">
+                                <div className="bg-orange-50 rounded-lg px-3 py-2 space-y-1.5">
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-500">현재 월 이자 (거치중)</span>
+                                    <span className="font-bold text-red-500">{graceInterest.toLocaleString('ko-KR')}원/월</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-500">거치기간 남은 개월</span>
+                                    <span className="font-medium text-orange-600">{loanForm.graceMonths}개월</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-500">원금상환 개시 예정</span>
+                                    <span className="font-bold text-blue-600">{monthsLater(loanForm.graceMonths)}</span>
+                                  </div>
+                                </div>
+                                {amortPmt2 > 0 && (
+                                  <div className="bg-blue-50 rounded-lg px-3 py-2 space-y-1.5">
+                                    <p className="text-xs font-semibold text-blue-600">원금상환 개시 후</p>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-500">월 납입액 (원리금균등)</span>
+                                      <span className="font-bold text-blue-700">{amortPmt2.toLocaleString('ko-KR')}원/월</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-500">상환 기간</span>
+                                      <span className="font-medium text-slate-700">{formatMonths(amortMonths2)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-500">완납 예정</span>
+                                      <span className="font-medium text-slate-700">{monthsLater(loanForm.remainingMonths)}</span>
+                                    </div>
+                                  </div>
+                                )}
+                                <div className="flex justify-between border-t border-pink-100 pt-1.5">
+                                  <span className="text-slate-500">전체 총 이자</span>
+                                  <span className="font-bold text-red-500">{calc.totalInterest.toLocaleString('ko-KR')}원</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setLoan('monthlyPayment', graceInterest)}
+                                  className="w-full py-1.5 bg-orange-100 text-orange-700 rounded-lg text-xs font-semibold hover:bg-orange-200 transition-colors"
+                                >
+                                  현재 납입액(이자만) 적용 — {graceInterest.toLocaleString('ko-KR')}원/월
+                                </button>
+                              </div>
+                            ) : (
+                              // 일반 상환방식 표시
+                              <>
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-500">월 납입액</span>
+                                    <span className="font-bold text-slate-800">{calc.monthlyPayment.toLocaleString('ko-KR')}원</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-500">└ 첫달 원금</span>
+                                    <span className="font-medium text-blue-600">{calc.firstMonthPrincipal.toLocaleString('ko-KR')}원</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-500">└ 첫달 이자</span>
+                                    <span className="font-medium text-red-500">{calc.firstMonthInterest.toLocaleString('ko-KR')}원</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-500">완납 예정</span>
+                                    <span className="font-medium text-slate-700">{monthsLater(calc.payoffMonths)}</span>
+                                  </div>
+                                </div>
+                                <div className="border-t border-pink-100 pt-2 space-y-1 text-xs">
+                                  <p className="font-semibold text-slate-600">1년 상환 계획</p>
+                                  <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                    <div className="flex justify-between"><span className="text-slate-500">총 납입액</span><span className="font-medium text-slate-800">{calc.yearlyPayment.toLocaleString('ko-KR')}원</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-500">납입 원금</span><span className="font-medium text-blue-600">{calc.yearlyPrincipal.toLocaleString('ko-KR')}원</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-500">납입 이자</span><span className="font-medium text-red-500">{calc.yearlyInterest.toLocaleString('ko-KR')}원</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-500">1년 후 잔액</span><span className="font-bold text-slate-800">{calc.balanceAfterYear.toLocaleString('ko-KR')}원</span></div>
+                                  </div>
+                                </div>
+                                <div className="border-t border-pink-100 pt-2 flex justify-between text-xs">
+                                  <span className="text-slate-500">전체 기간 총 이자</span>
+                                  <span className="font-bold text-red-500">{calc.totalInterest.toLocaleString('ko-KR')}원</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setLoan('monthlyPayment', calc.monthlyPayment)}
+                                  className="w-full py-1.5 bg-pink-100 text-pink-700 rounded-lg text-xs font-semibold hover:bg-pink-200 transition-colors"
+                                >
+                                  계산된 월 납입액 적용 ({calc.monthlyPayment.toLocaleString('ko-KR')}원)
+                                </button>
+                              </>
+                            )}
                           </div>
-                          <div className="border-t border-pink-100 pt-2 space-y-1 text-xs">
-                            <p className="font-semibold text-slate-600">1년 상환 계획</p>
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                              <div className="flex justify-between">
-                                <span className="text-slate-500">총 납입액</span>
-                                <span className="font-medium text-slate-800">{calc.yearlyPayment.toLocaleString('ko-KR')}원</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-slate-500">납입 원금</span>
-                                <span className="font-medium text-blue-600">{calc.yearlyPrincipal.toLocaleString('ko-KR')}원</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-slate-500">납입 이자</span>
-                                <span className="font-medium text-red-500">{calc.yearlyInterest.toLocaleString('ko-KR')}원</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-slate-500">1년 후 잔액</span>
-                                <span className="font-bold text-slate-800">{calc.balanceAfterYear.toLocaleString('ko-KR')}원</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="border-t border-pink-100 pt-2 flex justify-between text-xs">
-                            <span className="text-slate-500">전체 기간 총 이자</span>
-                            <span className="font-bold text-red-500">{calc.totalInterest.toLocaleString('ko-KR')}원</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setLoan('monthlyPayment', calc.monthlyPayment)}
-                            className="w-full py-1.5 bg-pink-100 text-pink-700 rounded-lg text-xs font-semibold hover:bg-pink-200 transition-colors"
-                          >
-                            계산된 월 납입액 적용 ({calc.monthlyPayment.toLocaleString('ko-KR')}원)
-                          </button>
-                        </div>
-                      )}
+                        )
+                      })()}
 
                       {/* 총 대출금 + 월납입 + 상환일 */}
                       <div className="grid grid-cols-3 gap-2">
