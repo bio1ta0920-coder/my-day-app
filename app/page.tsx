@@ -214,11 +214,11 @@ export default function HomePage() {
 
   function addTodo() {
     if (!todoInput.trim()) return
-    const newTodo: TodoItem = { id: Date.now().toString(), text: todoInput.trim(), completed: false, createdDate: today }
+    const newTodo: TodoItem = { id: Date.now().toString(), text: todoInput.trim(), completed: false, createdDate: selectedDate }
     const all = getTodos()
     const updated = [...all, newTodo]
     saveTodos(updated)
-    setTodos(getTodosForDate(today))
+    setTodos(getTodosForDate(selectedDate))
     setTodoInput('')
   }
 
@@ -233,7 +233,7 @@ export default function HomePage() {
   function deleteTodo(id: string) {
     const all = getTodos()
     saveTodos(all.filter(t => t.id !== id))
-    setTodos(getTodosForDate(today))
+    setTodos(getTodosForDate(selectedDate))
   }
 
   const handleSaveDiary = () => {
@@ -303,11 +303,6 @@ export default function HomePage() {
                 {todos.filter(t => t.completed).length}/{todos.length}
               </span>
             </h2>
-            {todos.filter(t => !t.completed && t.createdDate < today).length > 0 && (
-              <span className="text-xs text-amber-500 font-semibold">
-                🔄 {todos.filter(t => !t.completed && t.createdDate < today).length}개 이월됨
-              </span>
-            )}
           </div>
 
           <div className="divide-y divide-slate-50">
@@ -319,15 +314,12 @@ export default function HomePage() {
                 <button
                   onClick={() => toggleTodo(todo.id)}
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                    todo.completed ? 'bg-emerald-400 border-emerald-400' : todo.createdDate < today ? 'border-amber-300' : 'border-slate-300'
+                    todo.completed ? 'bg-emerald-400 border-emerald-400' : 'border-slate-300'
                   }`}
                 >
                   {todo.completed && <Check size={10} color="white" strokeWidth={3} />}
                 </button>
                 <span className={`flex-1 text-sm transition-all ${todo.completed ? 'line-through text-slate-300' : 'text-slate-700'}`}>
-                  {todo.createdDate < today && !todo.completed && (
-                    <span className="text-xs text-amber-400 mr-1">이월</span>
-                  )}
                   {todo.text}
                 </span>
                 <button

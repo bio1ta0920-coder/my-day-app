@@ -590,10 +590,10 @@ export function saveTodos(todos: TodoItem[]): void {
   } catch (e) { console.error('투두 저장 실패:', e) }
 }
 
-// 오늘 기준으로 보여줄 투두 반환 (오늘 생성된 것 + 미완료 이월)
+// 해당 날짜에 생성된 투두만 반환
 export function getTodosForDate(date: string): TodoItem[] {
   const all = getTodos()
-  return all.filter(t => t.createdDate === date || (!t.completed && t.createdDate < date))
+  return all.filter(t => t.createdDate === date)
 }
 
 // ──────────────────────────────────────────
