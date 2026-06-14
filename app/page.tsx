@@ -18,6 +18,8 @@ import {
   getTodos,
   saveTodos,
   getTodosForDate,
+  getCarryoverTodos,
+  carryoverTodos,
 } from '@/lib/storage'
 import type { BudgetDayRecord, HealthDayRecord, PlannerDayRecord, TodoItem } from '@/lib/types'
 
@@ -108,6 +110,7 @@ export default function HomePage() {
   // 투두
   const [todos, setTodos] = useState<TodoItem[]>([])
   const [todoInput, setTodoInput] = useState('')
+  const [carryoverCount, setCarryoverCount] = useState(0)
 
   const loadDate = useCallback((dateStr: string) => {
     setSelectedDate(dateStr)
@@ -135,6 +138,7 @@ export default function HomePage() {
 
     // 할 일: 해당 날짜 기준으로 갱신
     setTodos(getTodosForDate(dateStr))
+    setCarryoverCount(getCarryoverTodos(dateStr).length)
 
     setFeedbackError('')
   }, [])
@@ -236,6 +240,12 @@ export default function HomePage() {
     setTodos(getTodosForDate(selectedDate))
   }
 
+  function handleCarryover() {
+    carryoverTodos(selectedDate)
+    setTodos(getTodosForDate(selectedDate))
+    setCarryoverCount(0)
+  }
+
   const handleSaveDiary = () => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(`unified_diary_${selectedDate}`, diaryText)
@@ -304,6 +314,20 @@ export default function HomePage() {
               </span>
             </h2>
           </div>
+
+          {carryoverCount > 0 && (
+            <div className="px-4 py-2.5 bg-amber-50 border-b border-amber-100 flex items-center justify-between">
+              <span className="text-xs text-amber-700 font-medium">
+                ⏩ 이전 미완료 할일 {carryoverCount}개
+              </span>
+              <button
+                onClick={handleCarryover}
+                className="text-xs font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full hover:bg-amber-200 transition-colors"
+              >
+                이월하기
+              </button>
+            </div>
+          )}
 
           <div className="divide-y divide-slate-50">
             {todos.length === 0 && (
