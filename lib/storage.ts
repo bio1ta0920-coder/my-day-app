@@ -596,6 +596,21 @@ export function getTodosForDate(date: string): TodoItem[] {
   return all.filter(t => t.createdDate === date)
 }
 
+export function getCarryoverTodos(date: string): TodoItem[] {
+  const all = getTodos()
+  return all.filter(t => !t.completed && t.createdDate < date)
+}
+
+export function carryoverTodos(toDate: string): void {
+  const all = getTodos()
+  const updated = all.map(t =>
+    (!t.completed && t.createdDate < toDate)
+      ? { ...t, createdDate: toDate }
+      : t
+  )
+  saveTodos(updated)
+}
+
 // ──────────────────────────────────────────
 // 독서 Storage
 // ──────────────────────────────────────────
