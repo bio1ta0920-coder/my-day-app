@@ -1,11 +1,37 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { TrendingDown, TrendingUp, Wallet, AlertTriangle, Lock, ChevronDown, ChevronUp } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { TrendingDown, TrendingUp, Wallet, AlertTriangle, Lock, ChevronDown, ChevronUp, Sparkles, RefreshCw } from 'lucide-react'
 import type { Expense } from '@/lib/types'
-import { getAllBudgetRecords, getBudgetSettings, getEffectiveBudgetSettings } from '@/lib/storage'
+import {
+  getAllBudgetRecords,
+  getBudgetSettings,
+  getEffectiveBudgetSettings,
+  getApiKey,
+  getMonthlyFeedback,
+  saveMonthlyFeedback,
+} from '@/lib/storage'
 import { BUDGET_CATEGORIES } from '@/lib/constants'
 import { calcLoan, formatMonths, monthsLater } from '@/lib/loanCalc'
+
+function formatFeedback(text: string): string {
+  const lines = text.split('\n')
+  const result: string[] = []
+  let inUl = false
+  for (const raw of lines) {
+    const line = raw.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    if (line.match(/^[•\-]\s/)) {
+      if (!inUl) { result.push('<ul>'); inUl = true }
+      result.push(`<li>${line.replace(/^[•\-]\s/, '')}</li>`)
+    } else {
+      if (inUl) { result.push('</ul>'); inUl = false }
+      if (line.trim() === '') result.push('')
+      else result.push(`<p>${line}</p>`)
+    }
+  }
+  if (inUl) result.push('</ul>')
+  return result.join('\n')
+}
 
 interface Props {
   yearMonth: string // "YYYY-MM"
@@ -219,6 +245,7 @@ export default function MonthlyReport({ yearMonth }: Props) {
       income: effective.income,
       savingsGoal: effective.savingsGoal,
       loans: settings.loans ?? [],
+      allExpenses,
     }
   }, [yearMonth, daysInMonth])
 
@@ -229,8 +256,85 @@ export default function MonthlyReport({ yearMonth }: Props) {
   const paymentEntries = Object.entries(data.byPayment).sort((a, b) => b[1] - a[1])
   const paymentTotal = paymentEntries.reduce((s, [, v]) => s + v, 0)
 
+  const [feedback, setFeedback] = useState<string | null>(null)
+  const [isLoadingFeedback, setIsLoadingFeedback] = useState(false)
+  const [feedbackError, setFeedbackError] = useState('')
+
+  useEffect(() => {
+    setFeedback(getMonthlyFeedback(yearMonth))
+    setFeedbackError('')
+  }, [yearMonth])
+
+  const handleGetMonthlyFeedback = async () => {
+    if (data.allExpenses.length === 0) { alert('이번달 지출 내역이 없어요.'); return }
+    setIsLoadingFeedback(true)
+    setFeedbackError('')
+    try {
+      const settings = getBudgetSettings()
+      const apiKey = getApiKey()
+      const res = await fetch('/api/feedback/budget/monthly', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expenses: data.allExpenses, yearMonth, settings, apiKey }),
+      })
+      const resData = await res.json() as { feedback?: string; error?: string }
+      if (!res.ok) { setFeedbackError(resData.error ?? '피드백 생성에 실패했습니다.'); return }
+      if (resData.feedback) {
+        saveMonthlyFeedback(yearMonth, resData.feedback)
+        setFeedback(resData.feedback)
+      }
+    } catch {
+      setFeedbackError('네트워크 오류가 발생했습니다.')
+    } finally {
+      setIsLoadingFeedback(false)
+    }
+  }
+
   return (
     <div className="px-4 pt-5 pb-8 space-y-5">
+
+      {/* 이번달 AI 피드백 */}
+      <section>
+        {!feedback ? (
+          <button
+            onClick={handleGetMonthlyFeedback}
+            disabled={isLoadingFeedback || data.allExpenses.length === 0}
+            className="w-full py-4 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-2xl font-bold text-base shadow-lg shadow-red-200 hover:shadow-xl active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isLoadingFeedback ? (
+              <>
+                <div className="spinner" />
+                Claude가 이번달 지출을 분석하고 있어요...
+              </>
+            ) : (
+              <><Sparkles size={18} /> 이번달 AI 피드백 받기</>
+            )}
+          </button>
+        ) : (
+          <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-4 fade-in">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-gradient-to-br from-red-600 to-red-500 rounded-lg flex items-center justify-center">
+                  <Sparkles size={14} className="text-white" />
+                </div>
+                <h3 className="font-bold text-slate-800">이번달 AI 피드백</h3>
+              </div>
+              <button
+                onClick={handleGetMonthlyFeedback}
+                disabled={isLoadingFeedback}
+                className="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-2xl text-xs font-medium hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-60"
+              >
+                {isLoadingFeedback ? <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" /> : <RefreshCw size={13} />}
+                다시 받기
+              </button>
+            </div>
+            <div className="feedback-text" dangerouslySetInnerHTML={{ __html: formatFeedback(feedback) }} />
+          </div>
+        )}
+        {feedbackError && (
+          <div className="mt-2 p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600">{feedbackError}</div>
+        )}
+      </section>
 
       {/* 요약 카드 4개 */}
       <div className="grid grid-cols-2 gap-3">

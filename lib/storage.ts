@@ -26,6 +26,7 @@ const isBrowser = typeof window !== 'undefined'
 const BUDGET_RECORDS_KEY = 'gaegyebu_records'
 const BUDGET_SETTINGS_KEY = 'gaegyebu_settings'
 const BUDGET_API_KEY_KEY = 'gaegyebu_api_key'
+const BUDGET_MONTHLY_FEEDBACK_KEY = 'gaegyebu_monthly_feedback'
 
 const defaultBudgetSettings: BudgetSettings = {
   monthlyIncome: 3000000,
@@ -148,6 +149,32 @@ export function saveApiKey(key: string): void {
     pushToCloud('unified_api_key', key)
   } catch (e) {
     console.error('API 키 저장 실패:', e)
+  }
+}
+
+export function getMonthlyFeedback(yearMonth: string): string | null {
+  if (!isBrowser) return null
+  try {
+    const raw = localStorage.getItem(BUDGET_MONTHLY_FEEDBACK_KEY)
+    if (!raw) return null
+    const all = JSON.parse(raw) as Record<string, string>
+    return all[yearMonth] ?? null
+  } catch {
+    return null
+  }
+}
+
+export function saveMonthlyFeedback(yearMonth: string, feedback: string): void {
+  if (!isBrowser) return
+  try {
+    const raw = localStorage.getItem(BUDGET_MONTHLY_FEEDBACK_KEY)
+    const all = raw ? (JSON.parse(raw) as Record<string, string>) : {}
+    all[yearMonth] = feedback
+    const value = JSON.stringify(all)
+    localStorage.setItem(BUDGET_MONTHLY_FEEDBACK_KEY, value)
+    pushToCloud(BUDGET_MONTHLY_FEEDBACK_KEY, value)
+  } catch (e) {
+    console.error('월간 AI 피드백 저장 실패:', e)
   }
 }
 
@@ -590,10 +617,10 @@ export function saveTodos(todos: TodoItem[]): void {
   } catch (e) { console.error('투두 저장 실패:', e) }
 }
 
-// 해당 날짜에 생성된 투두만 반환
+// 오늘 기준으로 보여줄 투두 반환 (해당 날짜 생성된 것 + 미완료 이월)
 export function getTodosForDate(date: string): TodoItem[] {
   const all = getTodos()
-  return all.filter(t => t.createdDate === date)
+  return all.filter(t => t.createdDate === date || (!t.completed && t.createdDate < date))
 }
 
 export function getCarryoverTodos(date: string): TodoItem[] {
@@ -656,7 +683,7 @@ export function importBudgetData(json: string): void {
   if (!isBrowser) return
   try {
     const data = JSON.parse(json) as Record<string, string>
-    const budgetKeys = [BUDGET_RECORDS_KEY, BUDGET_SETTINGS_KEY, BUDGET_API_KEY_KEY]
+    const budgetKeys = [BUDGET_RECORDS_KEY, BUDGET_SETTINGS_KEY, BUDGET_API_KEY_KEY, BUDGET_MONTHLY_FEEDBACK_KEY]
     for (const key of budgetKeys) {
       if (data[key]) {
         localStorage.setItem(key, data[key])
