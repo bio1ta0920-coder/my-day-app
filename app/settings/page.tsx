@@ -112,9 +112,12 @@ export default function SettingsPage() {
       if (count > 0) {
         setSyncStatus('done')
         showToast(`${count}개 항목을 클라우드에 저장했어요!`)
+      } else if (count === 0) {
+        setSyncStatus('done')
+        showToast('저장할 데이터가 없어요')
       } else {
         setSyncStatus('error')
-        showToast('동기화 실패 — 설정을 확인해주세요', 'error')
+        showToast('동기화 실패 — Supabase 설정/테이블 권한을 확인해주세요', 'error')
       }
     } catch {
       setSyncStatus('error')

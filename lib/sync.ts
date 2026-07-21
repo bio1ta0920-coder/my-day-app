@@ -27,7 +27,10 @@ export function pushToCloud(dataKey: string, value: string): void {
       { user_id: userId, data_key: dataKey, value, updated_at: new Date().toISOString() },
       { onConflict: 'user_id,data_key' }
     )
-    .then() // 오류 무시 — 오프라인 시에도 앱 동작
+    .then(({ error }) => {
+      // 오프라인 등으로 실패해도 앱 동작은 막지 않되, 콘솔에는 남긴다
+      if (error) console.error('클라우드 저장 실패:', dataKey, error)
+    })
 }
 
 /** 클라우드에서 모든 데이터를 가져와 localStorage에 저장 */
@@ -53,11 +56,12 @@ export async function pullFromCloud(): Promise<boolean> {
   }
 }
 
-/** 현재 localStorage의 모든 앱 데이터를 클라우드에 업로드 */
+/** 현재 localStorage의 모든 앱 데이터를 클라우드에 업로드
+ *  반환값: 업로드한 항목 수(>=0), 실패 시 -1 (0은 "저장할 데이터 없음"과 구분됨) */
 export async function pushAllToCloud(): Promise<number> {
   const client = getSupabaseClient()
   const userId = getSyncCode()
-  if (!client || !userId) return 0
+  if (!client || !userId) return -1
 
   const rows: { user_id: string; data_key: string; value: string; updated_at: string }[] = []
   const now = new Date().toISOString()
@@ -72,9 +76,14 @@ export async function pushAllToCloud(): Promise<number> {
   if (rows.length === 0) return 0
 
   try {
-    await client.from('app_data').upsert(rows, { onConflict: 'user_id,data_key' })
+    const { error } = await client.from('app_data').upsert(rows, { onConflict: 'user_id,data_key' })
+    if (error) {
+      console.error('클라우드 업로드 실패:', error)
+      return -1
+    }
     return rows.length
-  } catch {
-    return 0
+  } catch (e) {
+    console.error('클라우드 업로드 실패:', e)
+    return -1
   }
 }
